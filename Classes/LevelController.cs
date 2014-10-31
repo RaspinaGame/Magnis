@@ -42,8 +42,8 @@ public class LevelController : MonoBehaviour {
 			}
 			foreach( GameObject BG in BackGrounds )
 			{
-				MoverComponent MCBG =  BG.GetComponent<MoverComponent>();
-				MCBG.Move();
+                BGScroller MCBG = BG.GetComponent<BGScroller>();
+                MCBG.Scroll();
 			}
 		}
 		//else

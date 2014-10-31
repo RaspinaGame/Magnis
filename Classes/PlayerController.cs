@@ -3,9 +3,13 @@ using System.Collections;
 
 public class PlayerController : MonoBehaviour {
 
-	public  float MovmentSpeed = 0.1f; 
-	public 	float Xmax= 7.0f, Xmin = -7;
+	public  float MovmentSpeed = 0.2f; 
+	public 	float Xmax= 7, Xmin = -7;
 	public 	float Ymax = 1000, Ymin = -1000;
+    public LineRenderer anchorLine;
+    public GameObject fingerHead;
+    public GameObject anchorCenter;
+    public GameObject anchorHead;
 	
 	private string DTouchWorldPosition;
 	private string DFinalPosition;
@@ -14,6 +18,7 @@ public class PlayerController : MonoBehaviour {
 	// Use this for initialization
 	void Start () 
 	{
+        anchorCenter.transform.position = GetBasePosition();
 	}
 
 	Vector3 GetBasePosition()
@@ -22,7 +27,7 @@ public class PlayerController : MonoBehaviour {
 		//Camera MyCamera = FindObjectOfType<Camera> ();
 		//return MyCamera.transform.position;
 		//return transform.parent.position;
-		return new Vector3(0,0,0);
+		return new Vector3(0,0,-2);
 	}
 	Vector3 GetInput()
 	{
@@ -41,15 +46,20 @@ public class PlayerController : MonoBehaviour {
 		Vector3 FinalPosition, TouchWorldPosition, BasePosition;
 		if ( InputPosition != new Vector3 (-1000, -1000, -1000) )
 		{
+            
 			TouchWorldPosition = Camera.main.ScreenToWorldPoint(InputPosition);
+            TouchWorldPosition.x = Mathf.Clamp(TouchWorldPosition.x, Xmin, Xmax);
+            TouchWorldPosition.y = Mathf.Clamp(TouchWorldPosition.y, Ymin, Ymax);
+            anchorLine.SetPosition(1, new Vector3(TouchWorldPosition.x, TouchWorldPosition.y, -1));
+            fingerHead.transform.position = new Vector3(TouchWorldPosition.x, TouchWorldPosition.y, -1);
 			BasePosition = GetBasePosition();
-			TouchWorldPosition.z = 0;
+			TouchWorldPosition.z = -2;
 
 			//FinalPosition = BasePosition -  TouchWorldPosition - transform.position;
 
 			FinalPosition = BasePosition + BasePosition - TouchWorldPosition;
-			FinalPosition.x = Mathf.Clamp (FinalPosition.x, Xmin, Xmax);
-			FinalPosition.y = Mathf.Clamp (FinalPosition.y, Ymin, Ymax);
+		//	FinalPosition.x = Mathf.Clamp (FinalPosition.x, Xmin, Xmax);
+		//	FinalPosition.y = Mathf.Clamp (FinalPosition.y, Ymin, Ymax);
 
 			//transform.Translate(FinalPosition.x , FinalPosition.y , 0,Space.World);
 			DesiredPosition = FinalPosition;
@@ -68,32 +78,62 @@ public class PlayerController : MonoBehaviour {
 		if ( !GameInfo.IsGamePaused() )
 		{
 			ProcessTouch ( GetInput() );
-			print ( transform.position + " " + DesiredPosition + " " + MovmentSpeed + " " + Xmax);
-			transform.position = Vector3.Lerp (transform.position, DesiredPosition, MovmentSpeed);
+			//print ( transform.position + " " + DesiredPosition + " " + MovmentSpeed );
+         //   rigidbody2D.position = Vector3.Lerp(rigidbody2D.position, DesiredPosition, 0.1f);
+            anchorLine.SetPosition(0, new Vector3(DesiredPosition.x, DesiredPosition.y, -1));
+            anchorHead.transform.position = new Vector3(DesiredPosition.x, DesiredPosition.y, -1);
 		}
 		if (Input.GetKey (KeyCode.Escape)) 
 			Application.LoadLevel (0);
 	}
 
+    void FixedUpdate()
+    {
+        if (!GameInfo.IsGamePaused())
+        {
+            MoveToDesiredPosition(DesiredPosition);
+        }
+ 
+    }
 
+    void MoveToDesiredPosition(Vector3 inDesiredPosition ) 
+    {
+        Vector2 newposition = Vector3.Lerp(rigidbody2D.position, inDesiredPosition, MovmentSpeed);
+       // rigidbody2D.position = Vector3.Lerp(rigidbody2D.position, inDesiredPosition, 0.1f);
+        rigidbody2D.MovePosition(newposition);//= Vector3.Lerp(rigidbody2D.position, inDesiredPosition, 0.1f);
+    }
 
 	void OnCollisionEnter2D(Collision2D collision)
 	{
-
 		if (collision.gameObject.name == "LevelSplitter") 
 		{
 			GameInfo.LevelFinished();
 		}
-		else
-		{
-			GameInfo.PauseGame();
-			Invoke("GameOver",1.5f);	
-		}
+        //else
+        //{
+				
+        //}
 		//foreach (ContactPoint2D contact in collision.contacts) 
 		//{
 		//	Debug.DrawRay(contact.point, contact.normal, Color.white);
 		//}
 	}
+
+    void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.gameObject.name == "LevelSplitter")
+        {
+            GameInfo.LevelFinished();
+        }
+        else
+        {
+            GameInfo.PauseGame();
+            Invoke("GameOver", 1.5f);
+        }
+
+    }
+
+
 
 	void GameOver()
 	{
