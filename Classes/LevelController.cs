@@ -6,6 +6,7 @@ public class LevelController : MonoBehaviour {
 	public GameObject StartPoint;
 	public GameObject EndPoint;
 	public GameObject []BackGrounds;
+    public GameObject obstacle;
 	private MoverComponent[] MoverChildren;
 
 	private int LevelIndex = 0;
@@ -22,7 +23,7 @@ public class LevelController : MonoBehaviour {
 
 		GameInfo.SetLevelController (this);
 		//direction.Normalize();
-		MoverChildren = transform.GetComponentsInChildren<MoverComponent> ();
+        MoverChildren = obstacle.transform.GetComponentsInChildren<MoverComponent>();
 		Resetlevel ();
 		//ChildPositions = new ArrayList ();	
 		//foreach (MoverComponent CHPos in MoverChildren) 
