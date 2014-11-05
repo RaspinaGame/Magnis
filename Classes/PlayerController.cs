@@ -181,7 +181,7 @@ public class PlayerController : MonoBehaviour {
         {
 
             traceinfo = Physics2D.Raycast(rigidbody2D.position, velocity, 10f, LayerMask.GetMask("obstacle"));
-            print(traceinfo.collider);
+         //   print(traceinfo.collider);
             if (traceinfo.collider != null)
             {
                 Vector3 newVelocity;
@@ -328,11 +328,12 @@ public class PlayerController : MonoBehaviour {
         {
             GameInfo.LevelFinished();
         }
-        else
+        else if (other.gameObject.name == "Obstacle")
         {
             GameInfo.PauseGame();
             Invoke("GameOver", 1.5f);
-        }
+        }    
+        
 
     }
 
