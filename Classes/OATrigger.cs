@@ -16,7 +16,8 @@ public class OATrigger : MonoBehaviour {
 	// Update is called once per frame
 	void Update () 
     {
-        if (transform.position == Vector3.zero && !bIsTriggerd)
+       // Space.World
+        if (transform.position.magnitude < 0.5f && !bIsTriggerd)
         {
             foreach (ObstacleAnimator obstacleAnimator in obstacleAnimators)
             {
