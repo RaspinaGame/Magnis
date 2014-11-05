@@ -14,6 +14,7 @@ public class ObstacleAnimator : MonoBehaviour {
     public float playRate = 1f;
     public int triggerCount = 1;
     public bool repeatTrigger = false;
+    public bool triggerOnScreen = true;
 
     private AudioSource audioSource;
     private Animation anim;
@@ -48,8 +49,11 @@ public class ObstacleAnimator : MonoBehaviour {
         {
             print("my trigger has been touched");
             anim.Play(animClip.name);
-            audioSource.clip = soundClip;
-            audioSource.PlayDelayed(soundClipPlayDelayedTime);
+            if (soundClip != null)
+            {
+                audioSource.clip = soundClip;
+                audioSource.PlayDelayed(soundClipPlayDelayedTime);
+            }
         }
     }
 

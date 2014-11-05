@@ -6,6 +6,7 @@ using System.Collections;
 public class OATrigger : MonoBehaviour {
 
     ArrayList obstacleAnimators = new ArrayList();
+    bool bIsTriggerd;
 
 	// Use this for initialization
 	void Start () {
@@ -13,13 +14,22 @@ public class OATrigger : MonoBehaviour {
 	}
 	
 	// Update is called once per frame
-	void Update () {
+	void Update () 
+    {
+        if (transform.position == Vector3.zero && !bIsTriggerd)
+        {
+            foreach (ObstacleAnimator obstacleAnimator in obstacleAnimators)
+            {
+                if (obstacleAnimator.triggerOnScreen)
+                    obstacleAnimator.OnTriggerTouched();
+            }
+            bIsTriggerd = true;
+        }
 	
 	}
 
     public void AddObstacleAnimator(ObstacleAnimator inObstacleAnimator)
     {
-
         obstacleAnimators.Add(inObstacleAnimator);
     }
 
@@ -27,7 +37,8 @@ public class OATrigger : MonoBehaviour {
     {
         foreach(ObstacleAnimator obstacleAnimator in obstacleAnimators)
         {
-            obstacleAnimator.OnTriggerTouched();
+            if (!obstacleAnimator.triggerOnScreen)
+                obstacleAnimator.OnTriggerTouched();
         }
     }
 
