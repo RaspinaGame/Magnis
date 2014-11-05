@@ -24,8 +24,16 @@ public class ObstacleAnimator : MonoBehaviour {
         anim = GetComponent<Animation>();
         anim.playAutomatically = false;
         anim.AddClip(animClip, animClip.name);
-        anim[animClip.name].speed = playRate;    
-        trigger.GetComponent<OATrigger>().AddObstacleAnimator(this);
+        anim[animClip.name].speed = playRate;
+
+        if (trigger.GetComponent<OATrigger>() != null)
+        {
+            trigger.GetComponent<OATrigger>().AddObstacleAnimator(this);
+        }
+        else 
+        {
+            trigger.AddComponent<OATrigger>().AddObstacleAnimator(this);
+        }
 	}
 	
 	// Update is called once per frame
@@ -42,6 +50,14 @@ public class ObstacleAnimator : MonoBehaviour {
             anim.Play(animClip.name);
             audioSource.clip = soundClip;
             audioSource.PlayDelayed(soundClipPlayDelayedTime);
+        }
+    }
+
+    void OnStartLevel()
+    {
+        if (trigger == null)
+        {
+            OnTriggerTouched();
         }
     }
 }
