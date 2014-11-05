@@ -30,6 +30,7 @@ public class PlayerController : MonoBehaviour {
 
     ///////////////////////////////
     float maxSpeed;
+    float lastVelocityAdjustmentTime;
 
 	// Use this for initialization
 	void Start () 
@@ -154,10 +155,13 @@ public class PlayerController : MonoBehaviour {
     }
 
 
-
+    Vector3 velocity;
+    Vector3 lastVelocity;
     void MoveToDesiredPosition(Vector2 inDesiredPosition ) 
     {
         Vector2 newposition;
+       // Ray2D traceline;
+        RaycastHit2D traceinfo;
 
        
        
@@ -165,61 +169,80 @@ public class PlayerController : MonoBehaviour {
        // newMovmentSpeed = Mathf.Lerp(newMovmentSpeed, MovmentSpeed, 0.8f);
 
         //Vector3 targetPosition = inDesiredPosition;
-        Vector3 velocity = rigidbody2D.velocity;
-        newposition = Vector3.SmoothDamp(rigidbody2D.position, inDesiredPosition, ref velocity, 0.015f, 3000);
-
+        
+         
+     //   if (Time.fixedTime - lastVelocityAdjustmentTime >= 0.03f)
+    //    {
+            velocity = rigidbody2D.velocity;
+            newposition = Vector3.SmoothDamp(rigidbody2D.position, inDesiredPosition, ref velocity, 0.015f, 3000);
+          //  lastVelocityAdjustmentTime = Time.fixedTime;
+      //  }
         if (bIsInContact)
         {
-            //if (Mathf.Abs(collisionSurfaceNormal.x) > Mathf.Abs(collisionSurfaceNormal.y))
-            //{
-            //    if (collisionSurfaceNormal.x > 0)
-            //    {
-            //        if (inDesiredPosition.x < rigidbody2D.position.x)
-            //            velocity.x = 0;//-(colliderMoverComponent.Direction.x * Time.deltaTime);
-            //    }
-            //    else
-            //    {
-            //        if (inDesiredPosition.x > rigidbody2D.position.x)
-            //            velocity.x = 0;//inDesiredPosition.x = rigidbody2D.position.x;// -(colliderMoverComponent.Direction.x * Time.deltaTime);
-            //    }
-            //}
-            //else
-            //{
-            //    if (collisionSurfaceNormal.y > 0)
-            //    {
-            //        if (inDesiredPosition.y < rigidbody2D.position.y)
-            //            velocity.y = 0;//inDesiredPosition.y = rigidbody2D.position.y;// +(colliderMoverComponent.Direction.y * Time.deltaTime);
-            //    }
-            //    else
-            //    {
-            //        if (inDesiredPosition.y > rigidbody2D.position.y)
-            //            velocity.y = 0;//inDesiredPosition.y = rigidbody2D.position.y; //-(colliderMoverComponent.Direction.y * Time.deltaTime);
-            //    }
-            //}
-            float angle = Vector2.Angle(collisionSurfaceNormal, velocity);
 
-            Debug.DrawRay(rigidbody2D.position, velocity, Color.green);
-            if (angle >= 90 && angle <=135)
+            traceinfo = Physics2D.Raycast(rigidbody2D.position, velocity, 10f, LayerMask.GetMask("obstacle"));
+            print(traceinfo.collider);
+            if (traceinfo.collider != null)
             {
-                // print(Vector2.Angle(collisionSurfaceNormal, velocity));
+                Vector3 newVelocity;
+               // float angle = Vector2.Angle(traceinfo.normal, velocity);
+                //float angle = Vector2.Angle(collisionSurfaceNormal, velocity);
                 
-           //     velocity = Vector3.Project(velocity, Quaternion.AngleAxis(90, Vector3.forward) * collisionSurfaceNormal);
-                //velocity = Vector3.ClampMagnitude(velocity, 1f);
+
+                Debug.DrawRay(rigidbody2D.position, lastVelocity, Color.yellow);
                
-                // velocity = ( collisionSurfaceNormal.normalized) * velocity.magnitude;
+                
+                //rigidbody2D.velocity = newVelocity;
+               // velocity = newVelocity;
+
+
+
+
+                velocity = (velocity + lastVelocity) / 2f;
+                lastVelocity = velocity;
+             //   velocity = newVelocity;
+                newVelocity = Vector3.Project(velocity, Vector2.right);
+                
+                if (newVelocity.magnitude < 300f)
+                {
+                   
+                 //   velocity = newVelocity;
+                   // velocity = Vector3.zero;
+                    velocity.x = Mathf.Lerp(0f, velocity.x, Mathf.Pow(newVelocity.magnitude/300f, 2f));
+                }
+                Debug.DrawRay(rigidbody2D.position, Vector2.right * 10f, Color.green);
+                //if (angle >= 90 && angle <= 135)
+                //{
+                //    // print(Vector2.Angle(collisionSurfaceNormal, velocity));
+                //    //velocity = Vector3.ClampMagnitude(velocity, 1f);
+                //    // velocity = ( collisionSurfaceNormal.normalized) * velocity.magnitude;
+                //}
+                //else if (angle > 145)
+                //{
+                //    //  velocity = Vector3.ClampMagnitude(velocity, 0.1f);
+                //}
+
+                rigidbody2D.velocity = velocity;
+               
             }
-            else if (angle > 145)
+            else
             {
-              //  velocity = Vector3.ClampMagnitude(velocity, 0.1f);
+                rigidbody2D.velocity = velocity;
             }
-            Debug.DrawRay(rigidbody2D.position, collisionSurfaceNormal,Color.blue);
-            Debug.DrawRay(rigidbody2D.position, (Quaternion.AngleAxis(90, Vector3.forward) * collisionSurfaceNormal), Color.red);
+           // Debug.DrawRay(rigidbody2D.position, collisionSurfaceNormal, Color.blue);
+            //Debug.DrawRay(rigidbody2D.position, (Quaternion.AngleAxis(90, Vector3.forward) * collisionSurfaceNormal), Color.red);
         }
+        else
+        {
+            rigidbody2D.velocity = velocity;
+        }
+          
+            Debug.DrawRay(rigidbody2D.position, velocity);
+            
+            
         //rigidbody2D.velocity = velocity;
-      //  newposition = inDesiredPosition - rigidbody2D.position ;
-      //  if (newposition.sqrMagnitude > 2)
-        Debug.DrawRay(rigidbody2D.position, velocity);
-        rigidbody2D.velocity = velocity;
+            //  newposition = inDesiredPosition - rigidbody2D.position ;
+            //  if (newposition.sqrMagnitude > 2)
      //   newposition = Vector2.Lerp(rigidbody2D.position, inDesiredPosition, MovmentSpeed);
        // rigidbody2D.position = newposition;
       //  rigidbody2D.MovePosition(newposition);//= Vector3.Lerp(rigidbody2D.position, inDesiredPosition, 0.1f);
