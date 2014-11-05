@@ -1,13 +1,15 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class LevelController : MonoBehaviour {
 	
 	public GameObject StartPoint;
 	public GameObject EndPoint;
-	public GameObject []BackGrounds;
-	public GameObject obstacle;
-	private MoverComponent[] MoverChildren;
+	public GameObject[] BackGrounds;
+
+	public MoverComponent[] MoverChildren;
+	public List<MoverComponent> MoverLevel;
 
 	private int LevelIndex = 0;
 	private bool isPaused;
@@ -20,11 +22,25 @@ public class LevelController : MonoBehaviour {
 	}
 	// Use this for initialization
 	void Start () {
-
 		GameInfo.SetLevelController (this);
-		//direction.Normalize();
-		MoverChildren = obstacle.transform.GetComponentsInChildren<MoverComponent> ();
-		Resetlevel ();
+
+		MoverLevel = new List<MoverComponent> ();
+		MoverChildren = transform.GetComponentsInChildren<MoverComponent> ();
+		foreach (MoverComponent MC in MoverChildren)
+		{
+			MoverComponent[] TempMoverComponent;
+		
+			TempMoverComponent = MC.gameObject.GetComponentsInParent<MoverComponent>();
+			if ( TempMoverComponent.Length == 1 )
+			{
+				MoverLevel.Add(MC);
+			}
+			else
+			{
+				TempMoverComponent[1].AddToMoverChildrenObstacle(MC);
+			}
+		}
+		Resetlevel();
 		//ChildPositions = new ArrayList ();	
 		//foreach (MoverComponent CHPos in MoverChildren) 
 		//{
@@ -37,9 +53,9 @@ public class LevelController : MonoBehaviour {
 	{
 		if ( !IsPaused )
 		{
-			if (MoverChildren.GetLength (0) != 0)
+			if (MoverLevel.Count != 0)
 			{
-				MoverChildren [LevelIndex].Move ();
+				MoverLevel [LevelIndex].Move ();
 			}
 			foreach( GameObject BG in BackGrounds )
 			{
@@ -59,9 +75,8 @@ public class LevelController : MonoBehaviour {
 	}
 	public void LevelFinished()
 	{
-		Debug.Log ("LevelFinished" + LevelIndex);
-		MoverChildren [LevelIndex].LevelFinished (EndPoint.transform.position);
-		LevelIndex = ( LevelIndex + 1 ) % ( MoverChildren.Length + 1 );
+		MoverLevel [LevelIndex].LevelFinished (EndPoint.transform.position);
+		LevelIndex = ( LevelIndex + 1 ) % ( MoverLevel.Count + 1 );
 		Resetlevel();
 	}
 	//void OnMouseDown()
@@ -76,7 +91,7 @@ public class LevelController : MonoBehaviour {
 	public void Resetlevel()
 	{
 		ResumeGame ();
-		MoverChildren [LevelIndex].ResetLevel(StartPoint.transform.position);
+		MoverLevel [LevelIndex].ResetLevel(StartPoint.transform.position);
 	}
 
 	public void PauseGame()
