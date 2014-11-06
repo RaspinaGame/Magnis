@@ -181,7 +181,8 @@ public class PlayerController : MonoBehaviour {
         {
 
             traceinfo = Physics2D.Raycast(rigidbody2D.position, velocity, 10f, LayerMask.GetMask("obstacle"));
-         //   print(traceinfo.collider);
+            Debug.DrawRay(rigidbody2D.position, traceinfo.normal, Color.red);
+            print(traceinfo.collider);
             if (traceinfo.collider != null)
             {
                 Vector3 newVelocity;
@@ -198,18 +199,20 @@ public class PlayerController : MonoBehaviour {
 
 
 
-                velocity = (velocity + lastVelocity) / 2f;
+                newVelocity = (velocity + lastVelocity) / 2f;
                 lastVelocity = velocity;
-             //   velocity = newVelocity;
+                velocity = newVelocity;
                 newVelocity = Vector3.Project(velocity, Vector2.right);
                 
-                if (newVelocity.magnitude < 300f)
+                if (newVelocity.magnitude < 600f)
                 {
                    
                  //   velocity = newVelocity;
                    // velocity = Vector3.zero;
-                    velocity.x = Mathf.Lerp(0f, velocity.x, Mathf.Pow(newVelocity.magnitude/300f, 2f));
+                   velocity.x = Mathf.Lerp(0f, velocity.x, Mathf.Pow(newVelocity.magnitude/600f, 2f));
+                   velocity.y = Mathf.Lerp(0f, velocity.y, Mathf.Pow(newVelocity.magnitude/600f, 2f));
                 }
+            }
                 Debug.DrawRay(rigidbody2D.position, Vector2.right * 10f, Color.green);
                 //if (angle >= 90 && angle <= 135)
                 //{
@@ -222,22 +225,16 @@ public class PlayerController : MonoBehaviour {
                 //    //  velocity = Vector3.ClampMagnitude(velocity, 0.1f);
                 //}
 
-                rigidbody2D.velocity = velocity;
+               // rigidbody2D.velocity = velocity;
                
-            }
-            else
-            {
-                rigidbody2D.velocity = velocity;
-            }
+         }
+         
+         rigidbody2D.velocity = velocity;
+         
            // Debug.DrawRay(rigidbody2D.position, collisionSurfaceNormal, Color.blue);
             //Debug.DrawRay(rigidbody2D.position, (Quaternion.AngleAxis(90, Vector3.forward) * collisionSurfaceNormal), Color.red);
-        }
-        else
-        {
-            rigidbody2D.velocity = velocity;
-        }
           
-            Debug.DrawRay(rigidbody2D.position, velocity);
+         Debug.DrawRay(rigidbody2D.position, velocity);
             
             
         //rigidbody2D.velocity = velocity;
