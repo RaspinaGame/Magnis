@@ -37,6 +37,8 @@ public class MoverComponent : MonoBehaviour {
 		tempVec = StartPoint;
 		tempVec.z = transform.position.z;
 		transform.position = tempVec;
+
+        BroadcastMessage("OnStartLevel", SendMessageOptions.DontRequireReceiver);
 	}
 		
 	public void LevelFinished(Vector3 EndPoint)

@@ -11,57 +11,37 @@ public class PlayerController : MonoBehaviour {
     public GameObject anchorCenter;
     public GameObject anchorHead;
     public Animator anim;
-	
-	private string DTouchWorldPosition;
-	private string DFinalPosition;
+    public float scaleRate = 0.5f;
 
 	private Vector3 DesiredPosition;
-    private Vector3 starttingScale;
-    private Vector3 desiredScale;
     private int scaleState;
     private Quaternion starttingRotation;
-    private float starttingMovmentSpeed;
     private bool bIsInContact;
-    private float newMovmentSpeed;
+    private float lastScaleTime;
 
-    Vector2 collisionSurfaceNormal;
-    Vector2 collisionpoint;
-    MoverComponent colliderMoverComponent;
-
-    ///////////////////////////////
+    /////////////////////////////// debug
     float maxSpeed;
-    float lastVelocityAdjustmentTime;
+    //float lastVelocityAdjustmentTime;
+    //private string DTouchWorldPosition;
+    //private string DFinalPosition;
+    //Vector2 collisionSurfaceNormal;
+    //Vector2 collisionpoint;
+    //MoverComponent colliderMoverComponent;
 
 	// Use this for initialization
 	void Start () 
 	{
         anchorCenter.transform.position = GetBasePosition();
-        starttingScale = transform.localScale;
         starttingRotation = transform.rotation;
-        desiredScale = starttingScale;
-        starttingMovmentSpeed = MovmentSpeed;
-        //StartCoroutine("UpdateScale");
-
-        
 	}
 
 	Vector3 GetBasePosition()
 	{
-	
 		//Camera MyCamera = FindObjectOfType<Camera> ();
 		//return MyCamera.transform.position;
 		//return transform.parent.position;
 		return new Vector3(0,0,-2);
 	}
-
-    IEnumerator UpdateScale()
-    {
-        while (true)
-        {
-            transform.localScale = Vector3.MoveTowards(transform.localScale, desiredScale, Time.deltaTime * 3f);
-            yield return null;
-        }
-    }
 
 	Vector3 GetInput()
 	{
@@ -89,25 +69,14 @@ public class PlayerController : MonoBehaviour {
             fingerHead.transform.position = new Vector3(TouchWorldPosition.x, TouchWorldPosition.y, -1);
 			BasePosition = GetBasePosition();
 			TouchWorldPosition.z = -2;
-
-			//FinalPosition = BasePosition -  TouchWorldPosition - transform.position;
-
-			//FinalPosition = BasePosition + BasePosition - TouchWorldPosition;
-            FinalPosition = -TouchWorldPosition;
-		//	FinalPosition.x = Mathf.Clamp (FinalPosition.x, Xmin, Xmax);
-		//	FinalPosition.y = Mathf.Clamp (FinalPosition.y, Ymin, Ymax);
-
-			//transform.Translate(FinalPosition.x , FinalPosition.y , 0,Space.World);
-          // if (!bIsInContact)
+			FinalPosition = BasePosition + BasePosition - TouchWorldPosition;
 			DesiredPosition = FinalPosition;
-
 
 			/// debug
 			//		print (transform.parent.name + TouchWorldPosition  + BasePosition.ToString() + FinalPosition.ToString());
-			DTouchWorldPosition = TouchWorldPosition.ToString();
-			DFinalPosition = FinalPosition.ToString();
+			//DTouchWorldPosition = TouchWorldPosition.ToString();
+			//DFinalPosition = FinalPosition.ToString();
 		}
-		//
 	}
 
     // Update is called once per frame
@@ -117,17 +86,12 @@ public class PlayerController : MonoBehaviour {
 		{
 			
 			//print ( transform.position + " " + DesiredPosition + " " + MovmentSpeed );
-         //   rigidbody2D.position = Vector3.Lerp(rigidbody2D.position, DesiredPosition, 0.1f);
+            //rigidbody2D.position = Vector3.Lerp(rigidbody2D.position, DesiredPosition, 0.1f);
             ProcessTouch ( GetInput() );
             anchorLine.SetPosition(0, new Vector3(DesiredPosition.x, DesiredPosition.y, -1));
             anchorHead.transform.position = new Vector3(DesiredPosition.x, DesiredPosition.y, -1);
-            
-
-         //   if (desiredScale.x - transform.localScale.x > 0.05)
-         //       transform.localScale = Vector3.Lerp(transform.localScale, desiredScale, 0.15f);
-          //  else
-           
 		}
+
 		if (Input.GetKey (KeyCode.Escape)) 
 			Application.LoadLevel (0);
 	}
@@ -136,22 +100,19 @@ public class PlayerController : MonoBehaviour {
     {
         if (!GameInfo.IsGamePaused())
         {
-           // if (transform.localScale != desiredScale)
-            //
             MoveToDesiredPosition(DesiredPosition);
-           
         }
  
     }
 
     void LateUpdate()
     {
-        if (!GameInfo.IsGamePaused())
-        {
+        //if (!GameInfo.IsGamePaused())
+        //{
             
-            // if (transform.localScale == desiredScale)
-           // transform.localScale = Vector3.Lerp(transform.localScale, desiredScale, 0.2f);
-        }
+        //    // if (transform.localScale == desiredScale)
+        //   // transform.localScale = Vector3.Lerp(transform.localScale, desiredScale, 0.2f);
+        //}
     }
 
 
@@ -159,46 +120,22 @@ public class PlayerController : MonoBehaviour {
     Vector3 lastVelocity;
     void MoveToDesiredPosition(Vector2 inDesiredPosition ) 
     {
-        Vector2 newposition;
-       // Ray2D traceline;
         RaycastHit2D traceinfo;
 
-       
-       
-       // newposition = Vector2.MoveTowards(rigidbody2D.position, inDesiredPosition, MovmentSpeed);
-       // newMovmentSpeed = Mathf.Lerp(newMovmentSpeed, MovmentSpeed, 0.8f);
-
-        //Vector3 targetPosition = inDesiredPosition;
+        velocity = rigidbody2D.velocity;
+        Vector3.SmoothDamp(rigidbody2D.position, inDesiredPosition, ref velocity, 0.015f, 3000f, Time.fixedDeltaTime);
         
-         
-     //   if (Time.fixedTime - lastVelocityAdjustmentTime >= 0.03f)
-    //    {
-            velocity = rigidbody2D.velocity;
-            newposition = Vector3.SmoothDamp(rigidbody2D.position, inDesiredPosition, ref velocity, 0.015f, 3000);
-          //  lastVelocityAdjustmentTime = Time.fixedTime;
-      //  }
         if (bIsInContact)
         {
 
-            traceinfo = Physics2D.Raycast(rigidbody2D.position, velocity, 10f, LayerMask.GetMask("obstacle"));
+            traceinfo = Physics2D.Raycast(rigidbody2D.position, velocity, scaleState + 1f, LayerMask.GetMask("obstacle"));
             Debug.DrawRay(rigidbody2D.position, traceinfo.normal, Color.red);
             print(traceinfo.collider);
             if (traceinfo.collider != null)
             {
                 Vector3 newVelocity;
-               // float angle = Vector2.Angle(traceinfo.normal, velocity);
-                //float angle = Vector2.Angle(collisionSurfaceNormal, velocity);
-                
 
-                Debug.DrawRay(rigidbody2D.position, lastVelocity, Color.yellow);
-               
-                
-                //rigidbody2D.velocity = newVelocity;
-               // velocity = newVelocity;
-
-
-
-
+             //   Debug.DrawRay(rigidbody2D.position, lastVelocity, Color.yellow);
                 newVelocity = (velocity + lastVelocity) / 2f;
                 lastVelocity = velocity;
                 velocity = newVelocity;
@@ -206,45 +143,15 @@ public class PlayerController : MonoBehaviour {
                 
                 if (newVelocity.magnitude < 600f)
                 {
-                   
-                 //   velocity = newVelocity;
-                   // velocity = Vector3.zero;
                    velocity.x = Mathf.Lerp(0f, velocity.x, Mathf.Pow(newVelocity.magnitude/600f, 2f));
                    velocity.y = Mathf.Lerp(0f, velocity.y, Mathf.Pow(newVelocity.magnitude/600f, 2f));
                 }
             }
-                Debug.DrawRay(rigidbody2D.position, Vector2.right * 10f, Color.green);
-                //if (angle >= 90 && angle <= 135)
-                //{
-                //    // print(Vector2.Angle(collisionSurfaceNormal, velocity));
-                //    //velocity = Vector3.ClampMagnitude(velocity, 1f);
-                //    // velocity = ( collisionSurfaceNormal.normalized) * velocity.magnitude;
-                //}
-                //else if (angle > 145)
-                //{
-                //    //  velocity = Vector3.ClampMagnitude(velocity, 0.1f);
-                //}
-
-               // rigidbody2D.velocity = velocity;
-               
+            //Debug.DrawRay(rigidbody2D.position, Vector2.right * 10f, Color.green);
          }
          
          rigidbody2D.velocity = velocity;
-         
-           // Debug.DrawRay(rigidbody2D.position, collisionSurfaceNormal, Color.blue);
-            //Debug.DrawRay(rigidbody2D.position, (Quaternion.AngleAxis(90, Vector3.forward) * collisionSurfaceNormal), Color.red);
-          
          Debug.DrawRay(rigidbody2D.position, velocity);
-            
-            
-        //rigidbody2D.velocity = velocity;
-            //  newposition = inDesiredPosition - rigidbody2D.position ;
-            //  if (newposition.sqrMagnitude > 2)
-     //   newposition = Vector2.Lerp(rigidbody2D.position, inDesiredPosition, MovmentSpeed);
-       // rigidbody2D.position = newposition;
-      //  rigidbody2D.MovePosition(newposition);//= Vector3.Lerp(rigidbody2D.position, inDesiredPosition, 0.1f);
-
-        //Vector3.SmoothDamp
     }
 
 	void OnCollisionEnter2D(Collision2D collision)
@@ -255,20 +162,11 @@ public class PlayerController : MonoBehaviour {
 		}
         else
         {
-          // rigidbody2D.AddForce(collision.contacts[0].normal * 1000);
-          //  collisionpoint = collision.contacts[0].point;
-         //   DesiredPosition = new Vector3(temp.x,temp.y,-2);
-         //   MovmentSpeed = 0.1f;
-            
-          //  newMovmentSpeed = 0.01f;
-        //    colliderMoverComponent = collision.gameObject.GetComponentInParent<MoverComponent>();
-            collisionSurfaceNormal = collision.contacts[0].normal;
-
-         //   transform.parent = collision.gameObject.transform;
             bIsInContact = true;
-            CancelInvoke("Scale");
-			InvokeRepeating("Scale",Time.deltaTime,0.6f);
+        //    CancelInvoke("Scale");
+	    //	InvokeRepeating("Scale",Time.deltaTime,0.6f);
         }
+
 		//foreach (ContactPoint2D contact in collision.contacts) 
 		//{
 		//	Debug.DrawRay(contact.point, contact.normal, Color.white);
@@ -284,14 +182,15 @@ public class PlayerController : MonoBehaviour {
         }
         else
         {
-            //collisionpoint = coll.contacts[0].point;
-            collisionSurfaceNormal = coll.contacts[0].normal;
-            //colliderMoverComponent = coll.gameObject.GetComponentInParent<MoverComponent>();
+            bIsInContact = true;
+            if (Time.time - lastScaleTime >= scaleRate)
+            {
+                Scale();
+                lastScaleTime = Time.time;
+            }
         }
 
     }
-
-
 
     void Scale()
     {
@@ -303,9 +202,9 @@ public class PlayerController : MonoBehaviour {
     void OnCollisionExit2D(Collision2D coll)
     {
         bIsInContact = false;
-        CancelInvoke("Scale");
-        MovmentSpeed = starttingMovmentSpeed;
-        transform.parent = null;
+        //CancelInvoke("Scale");
+        //MovmentSpeed = starttingMovmentSpeed;
+        //transform.parent = null;
     }
 
     void OnTriggerExit2D(Collider2D other)
@@ -316,8 +215,6 @@ public class PlayerController : MonoBehaviour {
             Invoke("GameOver", 1.5f);
         }
     }
-    
-    
 
     void OnTriggerEnter2D(Collider2D other)
     {
@@ -329,7 +226,11 @@ public class PlayerController : MonoBehaviour {
         {
             GameInfo.PauseGame();
             Invoke("GameOver", 1.5f);
-        }    
+        }
+        //else if (other.gameObject.name == "SceneSplitter")
+        //{
+        //    GameInfo.LevelFinished();
+        //}
         
 
     }
@@ -339,10 +240,7 @@ public class PlayerController : MonoBehaviour {
 	void GameOver()
 	{
 		GameInfo.GameOver();
-        transform.localScale = starttingScale;
         transform.rotation = starttingRotation;
-        desiredScale = starttingScale;
-        MovmentSpeed = starttingMovmentSpeed;
        // anchorLine.SetPosition(0, GetBasePosition());
        // anchorLine.SetPosition(1, GetBasePosition());
        // anchorHead.transform.position = GetBasePosition();
@@ -366,8 +264,9 @@ public class PlayerController : MonoBehaviour {
             maxSpeed = rigidbody2D.velocity.magnitude;
         GUI.Label(new Rect(20, 20, 200, 200), "maxSpeed : " + maxSpeed);
         //print ("DTouchWorldPosition" + DTouchWorldPosition);
-    //    _style.alignment = TextAnchor.MiddleCenter;
-    //    GUI.Label(new Rect(0, 20, 200, 200), "DFinalPosition" + DFinalPosition, _style);
+        //_style.alignment = TextAnchor.MiddleCenter;
+        GUI.Label(new Rect(20, 40, 200, 200), "Contact : " + bIsInContact);
+        GUI.Label(new Rect(20, 60, 200, 200), "scaleState : " + scaleState);
         //print ("DFinalPosition" + DFinalPosition);
         //_style.alignment = TextAnchor.MiddleCenter;
         //GUI.Label (new Rect (Screen.width - 320, 20, 200, 200), "LB(1):" + Input.touches.GetLowerBound (1) + " UB(0):" + Input.touches.GetUpperBound (1), _style);

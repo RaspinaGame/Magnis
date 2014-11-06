@@ -49,6 +49,11 @@ public class GameInfo : MonoBehaviour {
 		levelController.LevelFinished();
 	}
 
+    //public static void SceneFinished()
+    //{
+    //    levelController.SceneFinished();
+    //}
+
 	public static void GameOver()
 	{
 		levelController.Resetlevel();

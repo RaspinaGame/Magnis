@@ -18,10 +18,18 @@ public class ObstacleAnimator : MonoBehaviour {
 
     private AudioSource audioSource;
     private Animation anim;
+    private int startingTriggerCount;
 	// Use this for initialization
+
+    void Awake()
+    {
+        startingTriggerCount = triggerCount;
+    }
+
 	void Start () 
     {
         audioSource = GetComponent<AudioSource>();
+        audioSource.playOnAwake = false;
         anim = GetComponent<Animation>();
         anim.playAutomatically = false;
         anim.AddClip(animClip, animClip.name);
@@ -35,6 +43,7 @@ public class ObstacleAnimator : MonoBehaviour {
         {
             trigger.AddComponent<OATrigger>().AddObstacleAnimator(this);
         }
+
 	}
 	
 	// Update is called once per frame
@@ -59,6 +68,7 @@ public class ObstacleAnimator : MonoBehaviour {
 
     void OnStartLevel()
     {
+        triggerCount = startingTriggerCount;
         if (trigger == null)
         {
             OnTriggerTouched();

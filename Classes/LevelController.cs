@@ -11,7 +11,7 @@ public class LevelController : MonoBehaviour {
 	public MoverComponent[] MoverChildren;
 	public List<MoverComponent> MoverLevel;
 
-	private int LevelIndex = 0;
+	public int LevelIndex = 0;
 	private bool isPaused;
 	public bool IsPaused
 	{
@@ -75,9 +75,16 @@ public class LevelController : MonoBehaviour {
 	}
 	public void LevelFinished()
 	{
-		MoverLevel [LevelIndex].LevelFinished (EndPoint.transform.position);
-		LevelIndex = ( LevelIndex + 1 ) % ( MoverLevel.Count + 1 );
-		Resetlevel();
+        if (LevelIndex + 1 == MoverLevel.Count)
+        {
+            LoadNextScene();
+        }
+        else
+        { 
+            MoverLevel [LevelIndex].LevelFinished (EndPoint.transform.position);
+		    LevelIndex = ( LevelIndex + 1 ) % ( MoverLevel.Count - 1 );
+		    Resetlevel();
+        }
 	}
 	//void OnMouseDown()
 	//{
@@ -102,5 +109,20 @@ public class LevelController : MonoBehaviour {
 	{
 		isPaused = false;
 	}
+
+    void LoadNextScene()
+    {
+       // check to see if there is any level left to load
+        if (Application.levelCount > Application.loadedLevel + 1)
+        {
+            int levelIndex = Application.loadedLevel + 1;
+            Application.LoadLevel(levelIndex);
+        }
+            
+        else 
+        {
+            //Game is finished !!!
+        }
+    }
 
 }
