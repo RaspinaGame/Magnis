@@ -38,6 +38,7 @@ public class MoverComponent : MonoBehaviour {
 		tempVec.z = transform.position.z;
 		transform.position = tempVec;
 
+        //BroadcastMessage("OnStartLevel", SendMessageOptions.DontRequireReceiver);
         BroadcastMessage("OnStartLevel", SendMessageOptions.DontRequireReceiver);
 	}
 		
