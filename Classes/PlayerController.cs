@@ -231,11 +231,7 @@ public class PlayerController : MonoBehaviour {
         //{
         //    GameInfo.LevelFinished();
         //}
-        
-
     }
-
-
 
 	void GameOver()
 	{

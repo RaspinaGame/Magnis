@@ -6,9 +6,6 @@ public class MoverComponent : MonoBehaviour {
 
 	public Vector2 Direction;
 	public bool IsBackground;
-    public bool bIsChild;
-
-	public float testee;
 
 	public List<MoverComponent> MoverObstacles;
     Vector3 startingPosition;
@@ -40,16 +37,16 @@ public class MoverComponent : MonoBehaviour {
 		tempVec.z = transform.position.z;
 		transform.position = tempVec;
 
-        BroadcastMessage("ResetChildren", SendMessageOptions.DontRequireReceiver);
+        foreach(MoverComponent MC in MoverObstacles )
+		{
+			MC.ResetChildren();
+		}
         BroadcastMessage("OnStartLevel", SendMessageOptions.DontRequireReceiver);
 	}
 
     public void ResetChildren()
     {
-        if (bIsChild)
-        {
-            transform.position = startingPosition;
-        }
+        transform.position = startingPosition;
     }
 		
 	public void LevelFinished(Vector3 EndPoint)
