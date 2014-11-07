@@ -45,10 +45,19 @@ public class OATrigger : MonoBehaviour {
 
     void TtiggerOnStartLevel(int levelIndex)
     {
-        bIsTriggerd = false;
+        
         foreach (ObstacleAnimator obstacleAnimator in obstacleAnimators)
         {
             obstacleAnimator.OnStartLevel(levelIndex);
+        }
+    }
+
+    void TtiggerGameIsPused()
+    {
+        bIsTriggerd = false;
+        foreach (ObstacleAnimator obstacleAnimator in obstacleAnimators)
+        {
+            obstacleAnimator.GameIsPused();
         }
     }
 

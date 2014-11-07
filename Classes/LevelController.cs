@@ -65,7 +65,7 @@ public class LevelController : MonoBehaviour {
         }
         else 
         {
-            MoverLevel[LevelIndex].BroadcastMessage("GameIsPused", SendMessageOptions.DontRequireReceiver);
+            MoverLevel[LevelIndex].BroadcastMessage("TtiggerGameIsPused", SendMessageOptions.DontRequireReceiver);
         }
 		//else
 		//{

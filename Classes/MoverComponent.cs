@@ -13,7 +13,7 @@ public class MoverComponent : MonoBehaviour {
 	// Use this for initialization
 	void Start () 
 	{
-        startingPosition = transform.position;
+        startingPosition = transform.localPosition;
 	}
 	
 	// Update is called once per frame
@@ -39,22 +39,19 @@ public class MoverComponent : MonoBehaviour {
 
         foreach(MoverComponent MC in MoverObstacles )
 		{
-			MC.ResetChildren();
+            MC.ResetChildren(StartPoint);
 		}
         BroadcastMessage("TtiggerOnStartLevel", levelIndex, SendMessageOptions.DontRequireReceiver);
 	}
 
-    public void ResetChildren()
+    public void ResetChildren(Vector3 StartPoint)
     {
         transform.position = startingPosition;
     }
 		
 	public void LevelFinished(Vector3 EndPoint)
 	{
-		Vector3 tempVec;
-		tempVec = EndPoint;
-		tempVec.z = transform.position.z;
-		transform.position = tempVec;
+        transform.localPosition = startingPosition ;
 	}
 
 	public void AddToMoverChildrenObstacle(MoverComponent MC)
