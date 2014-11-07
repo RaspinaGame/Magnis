@@ -30,7 +30,7 @@ public class MoverComponent : MonoBehaviour {
 		}
 	}
 
-	public void ResetLevel(Vector3 StartPoint)
+	public void ResetLevel(Vector3 StartPoint, int levelIndex)
 	{
 		Vector3 tempVec;
 		tempVec = StartPoint;
@@ -41,7 +41,7 @@ public class MoverComponent : MonoBehaviour {
 		{
 			MC.ResetChildren();
 		}
-        BroadcastMessage("OnStartLevel", SendMessageOptions.DontRequireReceiver);
+        BroadcastMessage("TtiggerOnStartLevel", levelIndex, SendMessageOptions.DontRequireReceiver);
 	}
 
     public void ResetChildren()

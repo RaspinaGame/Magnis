@@ -74,7 +74,7 @@ public class ObstacleAnimator : MonoBehaviour {
         }
     }
 
-    void OnStartLevel()
+    public virtual void OnStartLevel( int levelIndex)
     {
        
        // anim.Stop();
@@ -87,7 +87,7 @@ public class ObstacleAnimator : MonoBehaviour {
         }
     }
 
-    void resertToInitial()
+    protected void resertToInitial()
     {
        // gameObject.SampleAnimation(animClip,0);
         anim[animClip.name].speed = -1;
@@ -102,7 +102,7 @@ public class ObstacleAnimator : MonoBehaviour {
        
     }
 
-    void GameIsPused()
+    public void GameIsPused()
     {
         anim.Stop();
     }

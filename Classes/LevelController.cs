@@ -102,7 +102,7 @@ public class LevelController : MonoBehaviour {
 	public void Resetlevel()
 	{
 		ResumeGame ();
-		MoverLevel [LevelIndex].ResetLevel(StartPoint.transform.position);
+        MoverLevel[LevelIndex].ResetLevel(StartPoint.transform.position, LevelIndex);
 	}
 
 	public void PauseGame()
