@@ -19,11 +19,18 @@ public class ObstacleAnimator : MonoBehaviour {
     private AudioSource audioSource;
     private Animation anim;
     private int startingTriggerCount;
+
+    Vector3 startingPosition;
+    Vector3 startingScale;
+    Quaternion startingRotation;
 	// Use this for initialization
 
     void Awake()
     {
         startingTriggerCount = triggerCount;
+        startingPosition = transform.position;
+        startingScale = transform.localScale;
+        startingRotation = transform.localRotation;
     }
 
 	void Start () 
@@ -33,7 +40,7 @@ public class ObstacleAnimator : MonoBehaviour {
         anim = GetComponent<Animation>();
         anim.playAutomatically = false;
         anim.AddClip(animClip, animClip.name);
-        anim[animClip.name].speed = playRate;
+        
 
         if (trigger.GetComponent<OATrigger>() != null)
         {
@@ -57,7 +64,7 @@ public class ObstacleAnimator : MonoBehaviour {
         if (triggerCount == 0 || repeatTrigger)
         {
             print("my trigger has been touched");
-           // anim.Stop();
+            anim[animClip.name].speed = playRate;
             anim.Play(animClip.name);
             if (soundClip != null)
             {
@@ -69,9 +76,10 @@ public class ObstacleAnimator : MonoBehaviour {
 
     void OnStartLevel()
     {
-        triggerCount = startingTriggerCount;
-        anim.Stop();
+       
+       // anim.Stop();
         resertToInitial();
+        
         //anim.Play(animClip.name, PlayMode.StopAll);
         if (trigger == null)
         {
@@ -81,7 +89,23 @@ public class ObstacleAnimator : MonoBehaviour {
 
     void resertToInitial()
     {
- 
+       // gameObject.SampleAnimation(animClip,0);
+        anim[animClip.name].speed = -1;
+        anim.Play(animClip.name);
+      //  anim.Rewind();
+        //animation.Rewind(animClip.name);
+
+        //transform.position = startingPosition;
+        //transform.localScale = startingScale;
+        //transform.localRotation = startingRotation;
+        triggerCount = startingTriggerCount;
+       
     }
+
+    void GameIsPused()
+    {
+        anim.Stop();
+    }
+
 }
 

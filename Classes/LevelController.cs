@@ -51,18 +51,22 @@ public class LevelController : MonoBehaviour {
 	// Update is called once per frame
 	void Update () 
 	{
-		if ( !IsPaused )
-		{
-			if (MoverLevel.Count != 0)
-			{
-				MoverLevel [LevelIndex].Move ();
-			}
-			foreach( GameObject BG in BackGrounds )
-			{
+        if (!IsPaused)
+        {
+            if (MoverLevel.Count != 0)
+            {
+                MoverLevel[LevelIndex].Move();
+            }
+            foreach (GameObject BG in BackGrounds)
+            {
                 BGScroller MCBG = BG.GetComponent<BGScroller>();
                 MCBG.Scroll();
-			}
-		}
+            }
+        }
+        else 
+        {
+            MoverLevel[LevelIndex].BroadcastMessage("GameIsPused", SendMessageOptions.DontRequireReceiver);
+        }
 		//else
 		//{
 			//transform.Translate (Direction  * Time.deltaTime);
@@ -82,7 +86,7 @@ public class LevelController : MonoBehaviour {
         else
         { 
             MoverLevel [LevelIndex].LevelFinished (EndPoint.transform.position);
-		    LevelIndex = ( LevelIndex + 1 ) % ( MoverLevel.Count - 1 );
+		    LevelIndex = ( LevelIndex + 1 ) % ( MoverLevel.Count );
 		    Resetlevel();
         }
 	}
