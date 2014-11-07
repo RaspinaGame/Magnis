@@ -57,6 +57,7 @@ public class ObstacleAnimator : MonoBehaviour {
         if (triggerCount == 0 || repeatTrigger)
         {
             print("my trigger has been touched");
+           // anim.Stop();
             anim.Play(animClip.name);
             if (soundClip != null)
             {
@@ -69,9 +70,18 @@ public class ObstacleAnimator : MonoBehaviour {
     void OnStartLevel()
     {
         triggerCount = startingTriggerCount;
+        anim.Stop();
+        resertToInitial();
+        //anim.Play(animClip.name, PlayMode.StopAll);
         if (trigger == null)
         {
             OnTriggerTouched();
         }
     }
+
+    void resertToInitial()
+    {
+ 
+    }
 }
+

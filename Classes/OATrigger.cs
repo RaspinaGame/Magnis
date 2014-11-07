@@ -43,5 +43,10 @@ public class OATrigger : MonoBehaviour {
         }
     }
 
+    void OnStartLevel()
+    {
+        bIsTriggerd = false;
+    }
+
 
 }
