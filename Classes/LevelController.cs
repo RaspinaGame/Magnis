@@ -11,7 +11,7 @@ public class LevelController : MonoBehaviour {
 	public MoverComponent[] MoverChildren;
 	public List<MoverComponent> MoverLevel;
 
-    public GameInfo BossManager;
+    public GameObject BossManager;
 
 	public int LevelIndex = 0;
 	private bool isPaused;

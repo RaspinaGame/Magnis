@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
-using UnityEditor;
+//using UnityEditor;
 
 
 [RequireComponent(typeof(Animation))]
@@ -50,6 +50,10 @@ public class ObstacleAnimator : MonoBehaviour {
         anim.AddClip(animClip, animClip.name);
 
         oAManager = GetComponent<OAManager>();
+        if (oAManager == null)
+        {
+            oAManager = gameObject.AddComponent<OAManager>();
+        }
         oAManager.AddObstacleAnimator(this);
         //initialAnimClip = animClip;
        // anim.AddClip(initialAnimClip, "initialAnimClip");
@@ -115,12 +119,15 @@ public class ObstacleAnimator : MonoBehaviour {
     {
         if (oAManager.ShoudBlendToinitialAnimClip(this))
         {
-            if (anim["initialAnimClip"] == null)
-            {
-                initialAnimClip = CustomizeAnimByFrame(animClip);
-                anim.AddClip(initialAnimClip, "initialAnimClip");
-            }
-            anim.CrossFade("initialAnimClip",1f);
+           // if (anim["initialAnimClip"] == null)
+           // {
+            //    initialAnimClip = CustomizeAnimByFrame(animClip);
+            //    anim.AddClip(initialAnimClip, "initialAnimClip");
+            //}
+            //anim.CrossFade("initialAnimClip",1f);
+            anim[animClip.name].time = 0;
+            anim[animClip.name].speed = -1;
+            // anim.Stop();
         }
         //anim["initialAnimClip"].wrapMode = WrapMode.Loop;
         
@@ -182,27 +189,27 @@ public class ObstacleAnimator : MonoBehaviour {
          
     }
 
-    AnimationClip CustomizeAnimByFrame(AnimationClip inClip,int frameIndex = 0)
-    {
-        AnimationClip customAnim = new AnimationClip();
-        AnimationClipCurveData[] animClipCurves =  AnimationUtility.GetAllCurves(inClip,true);
+    //AnimationClip CustomizeAnimByFrame(AnimationClip inClip,int frameIndex = 0)
+    //{
+    //   // AnimationClip customAnim = new AnimationClip();
+    //    //AnimationClipCurveData[] animClipCurves =  AnimationUtility.GetAllCurves(inClip,true);
 
-        foreach (AnimationClipCurveData animClipCurve in animClipCurves)
-        {
-            AnimationCurve newCurve = new AnimationCurve();
+    //    //foreach (AnimationClipCurveData animClipCurve in animClipCurves)
+    //    //{
+    //    //    AnimationCurve newCurve = new AnimationCurve();
 
-            newCurve.AddKey(animClipCurve.curve.keys[frameIndex].time, animClipCurve.curve.keys[frameIndex].value);
-            newCurve.AddKey(animClipCurve.curve.keys[frameIndex+1].time, animClipCurve.curve.keys[frameIndex].value);
-            animClipCurve.curve = newCurve;
-        }
+    //    //    newCurve.AddKey(animClipCurve.curve.keys[frameIndex].time, animClipCurve.curve.keys[frameIndex].value);
+    //    //    newCurve.AddKey(animClipCurve.curve.keys[frameIndex+1].time, animClipCurve.curve.keys[frameIndex].value);
+    //    //    animClipCurve.curve = newCurve;
+    //    //}
 
-        foreach (AnimationClipCurveData animClipCurve in animClipCurves)
-        {
-            customAnim.SetCurve("", animClipCurve.type, animClipCurve.propertyName, animClipCurve.curve);
-        }
+    //    //foreach (AnimationClipCurveData animClipCurve in animClipCurves)
+    //    //{
+    //    //    customAnim.SetCurve("", animClipCurve.type, animClipCurve.propertyName, animClipCurve.curve);
+    //    //}
 
-        return customAnim;
-    }
+    //   // return customAnim;
+    //}
 
 }
 
