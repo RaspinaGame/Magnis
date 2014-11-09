@@ -11,6 +11,8 @@ public class LevelController : MonoBehaviour {
 	public MoverComponent[] MoverChildren;
 	public List<MoverComponent> MoverLevel;
 
+    public GameInfo BossManager;
+
 	public int LevelIndex = 0;
 	private bool isPaused;
 	public bool IsPaused
@@ -40,6 +42,12 @@ public class LevelController : MonoBehaviour {
 				TempMoverComponent[1].AddToMoverChildrenObstacle(MC);
 			}
 		}
+
+        foreach (MoverComponent MC in MoverLevel)
+        {
+            MC.gameObject.SetActive(false);
+        }		
+
 		Resetlevel();
 		//ChildPositions = new ArrayList ();	
 		//foreach (MoverComponent CHPos in MoverChildren) 
@@ -63,10 +71,10 @@ public class LevelController : MonoBehaviour {
                 MCBG.Scroll();
             }
         }
-        else 
-        {
-            MoverLevel[LevelIndex].BroadcastMessage("TtiggerGameIsPused", SendMessageOptions.DontRequireReceiver);
-        }
+       // else 
+        //{
+       //     MoverLevel[LevelIndex].BroadcastMessage("TtiggerGameIsPused", SendMessageOptions.DontRequireReceiver);
+       // }
 		//else
 		//{
 			//transform.Translate (Direction  * Time.deltaTime);
@@ -79,6 +87,7 @@ public class LevelController : MonoBehaviour {
 	}
 	public void LevelFinished()
 	{
+        MoverLevel[LevelIndex].gameObject.SetActive(false);
         if (LevelIndex + 1 == MoverLevel.Count)
         {
             LoadNextScene();
@@ -102,12 +111,16 @@ public class LevelController : MonoBehaviour {
 	public void Resetlevel()
 	{
 		ResumeGame ();
+        MoverLevel[LevelIndex].gameObject.SetActive(true);
         MoverLevel[LevelIndex].ResetLevel(StartPoint.transform.position, LevelIndex);
 	}
 
 	public void PauseGame()
 	{
 		isPaused = true;
+        MoverLevel[LevelIndex].BroadcastMessage("TtiggerGameIsPused", LevelIndex, SendMessageOptions.DontRequireReceiver);
+        if (BossManager != null)
+            BossManager.BroadcastMessage("TtiggerGameIsPused", LevelIndex, SendMessageOptions.DontRequireReceiver);
 	}
 	public void ResumeGame()
 	{

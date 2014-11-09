@@ -1,14 +1,17 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEditor;
 
 
 [RequireComponent(typeof(Animation))]
 [RequireComponent(typeof(AudioSource))]
+[RequireComponent(typeof(OAManager))]
 
 public class ObstacleAnimator : MonoBehaviour {
 
     public GameObject trigger;
     public AudioClip soundClip;
+    public float animClipPlayDelayedTime = 0f;
     public float soundClipPlayDelayedTime = 0f;
     public AnimationClip animClip;
     public float playRate = 1f;
@@ -19,10 +22,12 @@ public class ObstacleAnimator : MonoBehaviour {
     private AudioSource audioSource;
     private Animation anim;
     private int startingTriggerCount;
+    OAManager oAManager;
 
     Vector3 startingPosition;
     Vector3 startingScale;
     Quaternion startingRotation;
+    AnimationClip initialAnimClip;
 	// Use this for initialization
 
     void Awake()
@@ -35,11 +40,22 @@ public class ObstacleAnimator : MonoBehaviour {
 
 	void Start () 
     {
+        
+        
         audioSource = GetComponent<AudioSource>();
         audioSource.playOnAwake = false;
+
         anim = GetComponent<Animation>();
         anim.playAutomatically = false;
         anim.AddClip(animClip, animClip.name);
+
+        oAManager = GetComponent<OAManager>();
+        oAManager.AddObstacleAnimator(this);
+        //initialAnimClip = animClip;
+       // anim.AddClip(initialAnimClip, "initialAnimClip");
+       
+        
+        //gameObject.SampleAnimation(animClip, 0);
         
 
         if (trigger.GetComponent<OATrigger>() != null)
@@ -60,10 +76,18 @@ public class ObstacleAnimator : MonoBehaviour {
 
     public void OnTriggerTouched()
     {
+        Invoke("PlayEffects", animClipPlayDelayedTime);
+    }
+
+    void PlayEffects()
+    {
         triggerCount--;
         if (triggerCount == 0 || repeatTrigger)
         {
+            oAManager.AddTriggerdObstacleAnimators(this);
             print("my trigger has been touched");
+            anim[animClip.name].time = 0;
+            anim[animClip.name].wrapMode = WrapMode.ClampForever;
             anim[animClip.name].speed = playRate;
             anim.Play(animClip.name);
             if (soundClip != null)
@@ -78,7 +102,7 @@ public class ObstacleAnimator : MonoBehaviour {
     {
        
        // anim.Stop();
-        resertToInitial();
+       // resertToInitial();
         
         //anim.Play(animClip.name, PlayMode.StopAll);
         if (trigger == null)
@@ -89,12 +113,23 @@ public class ObstacleAnimator : MonoBehaviour {
 
     protected void resertToInitial()
     {
-       // gameObject.SampleAnimation(animClip,0);
-        anim[animClip.name].speed = -1;
-        anim.Play(animClip.name);
+        if (oAManager.ShoudBlendToinitialAnimClip(this))
+        {
+            if (anim["initialAnimClip"] == null)
+            {
+                initialAnimClip = CustomizeAnimByFrame(animClip);
+                anim.AddClip(initialAnimClip, "initialAnimClip");
+            }
+            anim.CrossFade("initialAnimClip",1f);
+        }
+        //anim["initialAnimClip"].wrapMode = WrapMode.Loop;
+        
+       // anim[animClip.name].speed = -0.5f;
+        //anim.Play(animClip.name);
       //  anim.Rewind();
         //animation.Rewind(animClip.name);
-
+        
+        //anim.Stop();
         //transform.position = startingPosition;
         //transform.localScale = startingScale;
         //transform.localRotation = startingRotation;
@@ -102,9 +137,71 @@ public class ObstacleAnimator : MonoBehaviour {
        
     }
 
-    public void GameIsPused()
+    public void GameIsPused(int levelIndex)
     {
-        anim.Stop();
+       // AnimationEvent animEve = new AnimationEvent();
+        //animEve.functionName= "FirstFrameRiched";
+        //animEve.time = 0;
+        //animClip.AddEvent(animEve);
+        CancelInvoke();
+        resertToInitial();
+        //if (!anim.IsPlaying(animClip.name))
+           // anim[animClip.name].time = animClip.length;
+        
+        
+       // anim[animClip.name].speed = -1f;
+        //anim.Play(animClip.name);
+       // anim.Stop(animClip.name);
+       
+        //
+       // anim.Stop(animClip.name);
+       
+        //anim[animClip.name].normalizedTime = 0.0F;
+        //anim[animClip.name].enabled = true;
+        //anim[animClip.name].weight = 1;
+        //anim.CrossFade("initialAnimClip", 1.5f);
+        //anim.Blend("initialAnimClip");
+       // animation["initialAnimClip"].enabled = false;
+        //anim.Play("initialAnimClip");
+        //anim.Sample();
+        //anim.Stop();
+
+       // print("GameIsPused" + gameObject.name);
+       
+    }
+
+    void FirstFrameRiched()
+    {
+        //anim.Stop(animClip.name);
+       // animClip.(animEve);
+       // anim[animClip.name].speed = -0.5f;
+       // anim[animClip.name].time = 0;
+       // anim.Play(animClip.name);
+        //  anim.Rewind();
+        //animation.Rewind(animClip.name);
+         
+    }
+
+    AnimationClip CustomizeAnimByFrame(AnimationClip inClip,int frameIndex = 0)
+    {
+        AnimationClip customAnim = new AnimationClip();
+        AnimationClipCurveData[] animClipCurves =  AnimationUtility.GetAllCurves(inClip,true);
+
+        foreach (AnimationClipCurveData animClipCurve in animClipCurves)
+        {
+            AnimationCurve newCurve = new AnimationCurve();
+
+            newCurve.AddKey(animClipCurve.curve.keys[frameIndex].time, animClipCurve.curve.keys[frameIndex].value);
+            newCurve.AddKey(animClipCurve.curve.keys[frameIndex+1].time, animClipCurve.curve.keys[frameIndex].value);
+            animClipCurve.curve = newCurve;
+        }
+
+        foreach (AnimationClipCurveData animClipCurve in animClipCurves)
+        {
+            customAnim.SetCurve("", animClipCurve.type, animClipCurve.propertyName, animClipCurve.curve);
+        }
+
+        return customAnim;
     }
 
 }

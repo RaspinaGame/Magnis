@@ -43,22 +43,22 @@ public class OATrigger : MonoBehaviour {
         }
     }
 
-    void TtiggerOnStartLevel(int levelIndex)
-    {
+    //void TtiggerOnStartLevel(int levelIndex)
+    //{
         
-        foreach (ObstacleAnimator obstacleAnimator in obstacleAnimators)
-        {
-            obstacleAnimator.OnStartLevel(levelIndex);
-        }
-    }
+    //    foreach (ObstacleAnimator obstacleAnimator in obstacleAnimators)
+    //    {
+    //        obstacleAnimator.OnStartLevel(levelIndex);
+    //    }
+    //}
 
     void TtiggerGameIsPused()
     {
         bIsTriggerd = false;
-        foreach (ObstacleAnimator obstacleAnimator in obstacleAnimators)
-        {
-            obstacleAnimator.GameIsPused();
-        }
+        //foreach (ObstacleAnimator obstacleAnimator in obstacleAnimators)
+        //{
+        //    obstacleAnimator.GameIsPused();
+        //}
     }
 
 
