@@ -17,6 +17,7 @@ public class PlayerController : MonoBehaviour {
     private int scaleState;
     private Quaternion starttingRotation;
     private bool bIsInContact;
+    private bool bIsContactWithWall;
     private float lastScaleTime;
 
     /////////////////////////////// debug
@@ -160,8 +161,20 @@ public class PlayerController : MonoBehaviour {
 		{
 			GameInfo.LevelFinished();
 		}
+        else if (collision.gameObject.tag == "wall")
+        {
+            bIsContactWithWall = true;
+        }
+        else if(collision.gameObject.tag == "UpperBoundry")
+        {
+            if (bIsInContact)
+            {
+                Die("UpperBoundry");
+            }
+        }
         else
         {
+            
             bIsInContact = true;
         //    CancelInvoke("Scale");
 	    //	InvokeRepeating("Scale",Time.deltaTime,0.6f);
@@ -180,6 +193,17 @@ public class PlayerController : MonoBehaviour {
         {
             //GameInfo.LevelFinished();
         }
+        else if (coll.gameObject.tag == "wall")
+        {
+            bIsContactWithWall = true;
+        }
+        else if (coll.gameObject.tag == "UpperBoundry")
+        {
+            if (bIsInContact)
+            {
+                Die("UpperBoundry");
+            }
+        }
         else
         {
             bIsInContact = true;
@@ -196,12 +220,20 @@ public class PlayerController : MonoBehaviour {
     {
         if (scaleState < 7)
             scaleState++;
+        else
+        {
+            Die("Scale");
+        }
         anim.SetInteger("scaleState", scaleState);
     }
 
     void OnCollisionExit2D(Collision2D coll)
     {
         bIsInContact = false;
+        if (coll.gameObject.tag == "wall")
+        {
+            bIsContactWithWall = false;
+        }
         //CancelInvoke("Scale");
         //MovmentSpeed = starttingMovmentSpeed;
         //transform.parent = null;
@@ -211,8 +243,7 @@ public class PlayerController : MonoBehaviour {
     {
         if (other.gameObject.tag == "BoundaryTirigger")
         {
-            GameInfo.PauseGame();
-            Invoke("GameOver", 1.5f);
+            Die("BoundaryTirigger");
         }
     }
 
@@ -224,8 +255,7 @@ public class PlayerController : MonoBehaviour {
         }
         else if (other.gameObject.name == "Obstacle")
         {
-            GameInfo.PauseGame();
-            Invoke("GameOver", 1.5f);
+            Die("");
         }
         //else if (other.gameObject.name == "SceneSplitter")
         //{
@@ -236,7 +266,14 @@ public class PlayerController : MonoBehaviour {
 	void GameOver()
 	{
 		GameInfo.GameOver();
+        resertToInitial();
+       
+	}
+    void resertToInitial()
+    {
         transform.rotation = starttingRotation;
+        collider2D.enabled = true;
+        renderer.enabled = true;
        // anchorLine.SetPosition(0, GetBasePosition());
        // anchorLine.SetPosition(1, GetBasePosition());
        // anchorHead.transform.position = GetBasePosition();
@@ -244,8 +281,24 @@ public class PlayerController : MonoBehaviour {
         rigidbody2D.velocity = Vector2.zero;
         scaleState = 0;
         anim.SetInteger("scaleState", scaleState);
-	}
 
+        bIsContactWithWall = false;
+        bIsInContact = false;
+    }
+
+    void Die(string reason)
+    {
+        GameInfo.PauseGame();
+        StartRollOver();
+        Invoke("GameOver", 1f);
+    }
+
+    void StartRollOver()
+    {
+        collider2D.enabled = false;
+        renderer.enabled = false;
+        GameInfo.RollOver();
+    }
 	// Debug Part
 
     void OnGUI()

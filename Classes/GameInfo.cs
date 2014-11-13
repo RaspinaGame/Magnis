@@ -62,6 +62,10 @@ public class GameInfo : MonoBehaviour {
 	{
 		levelController.PauseGame ();
 	}
+    public static void RollOver()
+	{
+        levelController.RollOver();
+	}
 	public static void ResumeGame()
 	{
 		levelController.ResumeGame ();

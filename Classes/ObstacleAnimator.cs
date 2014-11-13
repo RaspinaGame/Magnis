@@ -14,6 +14,8 @@ public class ObstacleAnimator : MonoBehaviour {
     public float animClipPlayDelayedTime = 0f;
     public float soundClipPlayDelayedTime = 0f;
     public AnimationClip animClip;
+    public AnimationClip initialAnimClip;
+    public float crossFadeTime = 0.75f;
     public float playRate = 1f;
     public int triggerCount = 1;
     public bool repeatTrigger = false;
@@ -27,7 +29,7 @@ public class ObstacleAnimator : MonoBehaviour {
     Vector3 startingPosition;
     Vector3 startingScale;
     Quaternion startingRotation;
-    AnimationClip initialAnimClip;
+    
 	// Use this for initialization
 
     void Awake()
@@ -56,7 +58,11 @@ public class ObstacleAnimator : MonoBehaviour {
         }
         oAManager.AddObstacleAnimator(this);
         //initialAnimClip = animClip;
-       // anim.AddClip(initialAnimClip, "initialAnimClip");
+
+        if (initialAnimClip != null)
+        {
+            anim.AddClip(initialAnimClip, initialAnimClip.name);
+        }
        
         
         //gameObject.SampleAnimation(animClip, 0);
@@ -106,42 +112,13 @@ public class ObstacleAnimator : MonoBehaviour {
     {
        
        // anim.Stop();
-       // resertToInitial();
+        resertToInitial();
         
         //anim.Play(animClip.name, PlayMode.StopAll);
         if (trigger == null)
         {
             OnTriggerTouched();
         }
-    }
-
-    protected void resertToInitial()
-    {
-        if (oAManager.ShoudBlendToinitialAnimClip(this))
-        {
-           // if (anim["initialAnimClip"] == null)
-           // {
-            //    initialAnimClip = CustomizeAnimByFrame(animClip);
-            //    anim.AddClip(initialAnimClip, "initialAnimClip");
-            //}
-            //anim.CrossFade("initialAnimClip",1f);
-            anim[animClip.name].time = 0;
-            anim[animClip.name].speed = -1;
-            // anim.Stop();
-        }
-        //anim["initialAnimClip"].wrapMode = WrapMode.Loop;
-        
-       // anim[animClip.name].speed = -0.5f;
-        //anim.Play(animClip.name);
-      //  anim.Rewind();
-        //animation.Rewind(animClip.name);
-        
-        //anim.Stop();
-        //transform.position = startingPosition;
-        //transform.localScale = startingScale;
-        //transform.localRotation = startingRotation;
-        triggerCount = startingTriggerCount;
-       
     }
 
     public void GameIsPused(int levelIndex)
@@ -151,13 +128,14 @@ public class ObstacleAnimator : MonoBehaviour {
         //animEve.time = 0;
         //animClip.AddEvent(animEve);
         CancelInvoke();
-        resertToInitial();
+        //resertToInitial();
         //if (!anim.IsPlaying(animClip.name))
            // anim[animClip.name].time = animClip.length;
-        
-        
+
+        anim[animClip.name].speed = 0;
        // anim[animClip.name].speed = -1f;
         //anim.Play(animClip.name);
+        
        // anim.Stop(animClip.name);
        
         //
@@ -174,6 +152,44 @@ public class ObstacleAnimator : MonoBehaviour {
         //anim.Stop();
 
        // print("GameIsPused" + gameObject.name);
+       
+    }
+
+    public void RoleBack(int levelIndex)
+    {
+        if (initialAnimClip != null)
+        {
+            anim.CrossFade(initialAnimClip.name, crossFadeTime);
+        }
+    }
+
+    protected void resertToInitial()
+    {
+        if (oAManager.ShoudBlendToinitialAnimClip(this))
+        {
+           // if (anim["initialAnimClip"] == null)
+           // {
+            //    initialAnimClip = CustomizeAnimByFrame(animClip);
+            //    anim.AddClip(initialAnimClip, "initialAnimClip");
+            //}
+            //anim.CrossFade("initialAnimClip",1f);
+            anim[animClip.name].time = 0;
+            anim[animClip.name].speed = -1;
+            anim.Play(animClip.name);
+            // anim.Stop();
+        }
+        //anim["initialAnimClip"].wrapMode = WrapMode.Loop;
+        
+       // anim[animClip.name].speed = -0.5f;
+        //anim.Play(animClip.name);
+      //  anim.Rewind();
+        //animation.Rewind(animClip.name);
+        
+        //anim.Stop();
+        //transform.position = startingPosition;
+        //transform.localScale = startingScale;
+        //transform.localRotation = startingRotation;
+        triggerCount = startingTriggerCount;
        
     }
 

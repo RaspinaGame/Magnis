@@ -14,6 +14,14 @@ public class LevelController : MonoBehaviour {
     public GameObject BossManager;
 
 	public int LevelIndex = 0;
+    private bool isRollingBack;
+    public bool IsRollingBack
+    {
+        get
+        {
+            return isRollingBack;
+        }
+    }
 	private bool isPaused;
 	public bool IsPaused
 	{
@@ -71,6 +79,18 @@ public class LevelController : MonoBehaviour {
                 MCBG.Scroll();
             }
         }
+        else if (IsRollingBack)
+        {
+            if (MoverLevel.Count != 0)
+            {
+                MoverLevel[LevelIndex].MoveBack(StartPoint.transform.position);
+            }
+            foreach (GameObject BG in BackGrounds)
+            {
+                BGScroller MCBG = BG.GetComponent<BGScroller>();
+                MCBG.Scroll();
+            }
+        }
        // else 
         //{
        //     MoverLevel[LevelIndex].BroadcastMessage("TtiggerGameIsPused", SendMessageOptions.DontRequireReceiver);
@@ -111,8 +131,12 @@ public class LevelController : MonoBehaviour {
 	public void Resetlevel()
 	{
 		ResumeGame ();
+        isRollingBack = false;
         MoverLevel[LevelIndex].gameObject.SetActive(true);
         MoverLevel[LevelIndex].ResetLevel(StartPoint.transform.position, LevelIndex);
+        MoverLevel[LevelIndex].BroadcastMessage("TtiggerOnStartLevel", LevelIndex, SendMessageOptions.DontRequireReceiver);
+        if (BossManager != null)
+            BossManager.BroadcastMessage("TtiggerOnStartLevel", LevelIndex, SendMessageOptions.DontRequireReceiver);
 	}
 
 	public void PauseGame()
@@ -122,6 +146,13 @@ public class LevelController : MonoBehaviour {
         if (BossManager != null)
             BossManager.BroadcastMessage("TtiggerGameIsPused", LevelIndex, SendMessageOptions.DontRequireReceiver);
 	}
+    public void RollOver()
+	{
+        isRollingBack = true;
+        MoverLevel[LevelIndex].BroadcastMessage("TtiggerRollBack", LevelIndex, SendMessageOptions.DontRequireReceiver);
+        if (BossManager != null)
+            BossManager.BroadcastMessage("TtiggerRollBack", LevelIndex, SendMessageOptions.DontRequireReceiver);
+    }
 	public void ResumeGame()
 	{
 		isPaused = false;

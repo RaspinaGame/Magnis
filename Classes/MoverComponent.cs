@@ -30,6 +30,15 @@ public class MoverComponent : MonoBehaviour {
 		}
 	}
 
+    public void MoveBack(Vector3 StartPoint)
+	{
+        transform.Translate(-Direction * Time.deltaTime * Mathf.Max( Mathf.Abs(transform.position.y / 2f) , 0.8f));
+        //foreach (MoverComponent MC in MoverObstacles)
+        //{
+        //    MC.MoveBack(StartPoint);
+        //}
+	}
+
 	public void ResetLevel(Vector3 StartPoint, int levelIndex)
 	{
 		Vector3 tempVec;
@@ -41,7 +50,7 @@ public class MoverComponent : MonoBehaviour {
 		{
             MC.ResetChildren(StartPoint);
 		}
-        BroadcastMessage("TtiggerOnStartLevel", levelIndex, SendMessageOptions.DontRequireReceiver);
+       // BroadcastMessage("TtiggerOnStartLevel", levelIndex, SendMessageOptions.DontRequireReceiver);
 	}
 
     public void ResetChildren(Vector3 StartPoint)

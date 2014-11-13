@@ -41,7 +41,12 @@ public class OAManager : MonoBehaviour
 
     public bool ShoudBlendToinitialAnimClip(ObstacleAnimator inObstacleAnimator)
     {
-        return (triggerdObstacleAnimators[0] == inObstacleAnimator);
+        if (triggerdObstacleAnimators.Count > 0)
+        {
+ 
+           return( (ObstacleAnimator)triggerdObstacleAnimators[0] == inObstacleAnimator);
+        }
+        return false;
     }
     //void OnTriggerEnter2D(Collider2D other)
     //{
@@ -87,6 +92,15 @@ public class OAManager : MonoBehaviour
         foreach (ObstacleAnimator obstacleAnimator in obstacleAnimators)
         {
             obstacleAnimator.GameIsPused(levelIndex);
+        }
+    }
+
+    public void TtiggerRollBack(int levelIndex)
+    {
+        //bIsTriggerd = false;
+        foreach (ObstacleAnimator obstacleAnimator in obstacleAnimators)
+        {
+            obstacleAnimator.RoleBack(levelIndex);
         }
     }
 }
