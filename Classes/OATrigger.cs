@@ -36,11 +36,22 @@ public class OATrigger : MonoBehaviour {
 
     void OnTriggerEnter2D(Collider2D other)
     {
+        if (other.gameObject.tag == "Player")
         foreach(ObstacleAnimator obstacleAnimator in obstacleAnimators)
         {
             if (!obstacleAnimator.triggerOnScreen)
                 obstacleAnimator.OnTriggerTouched();
         }
+        else if (other.gameObject.tag == "MainCamera")
+        {
+            foreach (ObstacleAnimator obstacleAnimator in obstacleAnimators)
+            {
+                if (obstacleAnimator.triggerOnScreen)
+                    obstacleAnimator.OnTriggerTouched();
+            }
+            bIsTriggerd = true;
+        }
+        
     }
 
     void TtiggerOnStartLevel(int levelIndex)

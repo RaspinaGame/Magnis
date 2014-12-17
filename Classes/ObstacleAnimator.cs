@@ -29,7 +29,10 @@ public class ObstacleAnimator : MonoBehaviour {
     Vector3 startingPosition;
     Vector3 startingScale;
     Quaternion startingRotation;
-    
+
+    bool trigerTouched;
+
+    float animClipPlayDelayedTimer;
 	// Use this for initialization
 
     void Awake()
@@ -38,55 +41,76 @@ public class ObstacleAnimator : MonoBehaviour {
         startingPosition = transform.position;
         startingScale = transform.localScale;
         startingRotation = transform.localRotation;
-    }
-
-	void Start () 
-    {
-        
+		oAManager = GetComponent<OAManager>();
+		if (oAManager == null)
+		{
+			oAManager = gameObject.AddComponent<OAManager>();
+		}
+		oAManager.AddObstacleAnimator(this);
         
         audioSource = GetComponent<AudioSource>();
         audioSource.playOnAwake = false;
 
         anim = GetComponent<Animation>();
         anim.playAutomatically = false;
+        anim.cullingType = AnimationCullingType.AlwaysAnimate;
+        anim.animatePhysics = true;
         anim.AddClip(animClip, animClip.name);
-
-        oAManager = GetComponent<OAManager>();
-        if (oAManager == null)
-        {
-            oAManager = gameObject.AddComponent<OAManager>();
-        }
-        oAManager.AddObstacleAnimator(this);
+        
         //initialAnimClip = animClip;
 
         if (initialAnimClip != null)
         {
             anim.AddClip(initialAnimClip, initialAnimClip.name);
         }
-       
         
+        if (trigger != null)
+        {
+            if (trigger.GetComponent<OATrigger>() != null)
+            {
+                trigger.GetComponent<OATrigger>().AddObstacleAnimator(this);
+            }
+            else
+            {
+                trigger.AddComponent<OATrigger>().AddObstacleAnimator(this);
+            }
+        }
+    }
+
+	void Start () 
+    {
         //gameObject.SampleAnimation(animClip, 0);
-        
-
-        if (trigger.GetComponent<OATrigger>() != null)
-        {
-            trigger.GetComponent<OATrigger>().AddObstacleAnimator(this);
-        }
-        else 
-        {
-            trigger.AddComponent<OATrigger>().AddObstacleAnimator(this);
-        }
-
 	}
 	
 	// Update is called once per frame
-	void Update () {
+	void Update () 
+    {
+        if (trigerTouched && !GameInfo.IsGamePaused())
+        {
+            animClipPlayDelayedTimer -= Time.deltaTime;
+            if (animClipPlayDelayedTimer <= 0f)
+            {
+                trigerTouched = false;
+                PlayEffects();
+            }
+
+        }
 	
 	}
 
     public void OnTriggerTouched()
     {
-        Invoke("PlayEffects", animClipPlayDelayedTime);
+       // Invoke("PlayEffects", animClipPlayDelayedTime);
+
+        if (animClipPlayDelayedTime == 0f)
+        {
+            PlayEffects();
+        }
+        else 
+        {
+            animClipPlayDelayedTimer = animClipPlayDelayedTime;
+            trigerTouched = true;
+        }
     }
 
     void PlayEffects()
@@ -95,9 +119,9 @@ public class ObstacleAnimator : MonoBehaviour {
         if (triggerCount == 0 || repeatTrigger)
         {
             oAManager.AddTriggerdObstacleAnimators(this);
-            print("my trigger has been touched");
+            print("my trigger has been touched" + gameObject.name);
             anim[animClip.name].time = 0;
-            anim[animClip.name].wrapMode = WrapMode.ClampForever;
+           // anim[animClip.name].wrapMode = WrapMode.ClampForever;
             anim[animClip.name].speed = playRate;
             anim.Play(animClip.name);
             if (soundClip != null)
@@ -121,13 +145,30 @@ public class ObstacleAnimator : MonoBehaviour {
         }
     }
 
+    public virtual void OnStartNextLevel( int levelIndex)
+    {
+       
+       // anim.Stop();
+       // resertToInitial();
+        
+        //anim.Play(animClip.name, PlayMode.StopAll);
+        if (trigger == null)
+        {
+            OnTriggerTouched();
+        }
+    }
+
     public void GameIsPused(int levelIndex)
     {
+      //  if (!GameInfo.IsPlayerDead())
+      //  {
+ 
+      //  }
        // AnimationEvent animEve = new AnimationEvent();
         //animEve.functionName= "FirstFrameRiched";
         //animEve.time = 0;
         //animClip.AddEvent(animEve);
-        CancelInvoke();
+     //   CancelInvoke();
         //resertToInitial();
         //if (!anim.IsPlaying(animClip.name))
            // anim[animClip.name].time = animClip.length;
@@ -155,6 +196,13 @@ public class ObstacleAnimator : MonoBehaviour {
        
     }
 
+        
+    public void GameIsResumed(int levelIndex)
+    {
+      //  CancelInvoke();
+        anim[animClip.name].speed = playRate;
+    }
+
     public void RoleBack(int levelIndex)
     {
         if (initialAnimClip != null)
@@ -174,7 +222,7 @@ public class ObstacleAnimator : MonoBehaviour {
             //}
             //anim.CrossFade("initialAnimClip",1f);
             anim[animClip.name].time = 0;
-            anim[animClip.name].speed = -1;
+            anim[animClip.name].speed = 0;
             anim.Play(animClip.name);
             // anim.Stop();
         }
@@ -204,6 +252,19 @@ public class ObstacleAnimator : MonoBehaviour {
         //animation.Rewind(animClip.name);
          
     }
+
+    void OnDisable()
+    {
+       // print("OnDisable");
+        anim.enabled = false;
+    }
+
+    void OnEnable()
+    {
+        anim.enabled = true;
+    }
+
+
 
     //AnimationClip CustomizeAnimByFrame(AnimationClip inClip,int frameIndex = 0)
     //{

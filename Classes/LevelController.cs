@@ -6,14 +6,18 @@ public class LevelController : MonoBehaviour {
 	
 	public GameObject StartPoint;
 	public GameObject EndPoint;
-	public GameObject[] BackGrounds;
+    public BGScroller[] BackGroundsScroller;
+   // public GameObject mainCamera;
 
 	public MoverComponent[] MoverChildren;
 	public List<MoverComponent> MoverLevel;
+   // public MoverComponent CameraMoverComponent;
+
 
     public GameObject BossManager;
 
 	public int LevelIndex = 0;
+    public int editorLevelIndex = 0;
     private bool isRollingBack;
     public bool IsRollingBack
     {
@@ -30,10 +34,15 @@ public class LevelController : MonoBehaviour {
 			return isPaused;
 		}
 	}
+
+    public bool IsPlayerDead;
+
 	// Use this for initialization
 	void Start () {
+       // PlayerPrefs.DeleteKey("ChapterReached");
 		GameInfo.SetLevelController (this);
 
+       // CameraMoverComponent = mainCamera.GetComponent<MoverComponent>();
 		MoverLevel = new List<MoverComponent> ();
 		MoverChildren = transform.GetComponentsInChildren<MoverComponent> ();
 		foreach (MoverComponent MC in MoverChildren)
@@ -54,7 +63,14 @@ public class LevelController : MonoBehaviour {
         foreach (MoverComponent MC in MoverLevel)
         {
             MC.gameObject.SetActive(false);
-        }		
+        }
+
+        LevelIndex = PlayerPrefs.GetInt("LevelIndex", LevelIndex);
+
+        if (editorLevelIndex != 0)
+        {
+            LevelIndex = editorLevelIndex;
+        }
 
 		Resetlevel();
 		//ChildPositions = new ArrayList ();	
@@ -71,24 +87,24 @@ public class LevelController : MonoBehaviour {
         {
             if (MoverLevel.Count != 0)
             {
-                MoverLevel[LevelIndex].Move();
+              //  CameraMoverComponent.Move();
+               MoverLevel[LevelIndex].Move();
             }
-            foreach (GameObject BG in BackGrounds)
+            foreach (BGScroller BG in BackGroundsScroller)
             {
-                BGScroller MCBG = BG.GetComponent<BGScroller>();
-                MCBG.Scroll();
+                //BGScroller MCBG = BG.GetComponent<BGScroller>();
+                BG.Scroll();
             }
         }
         else if (IsRollingBack)
         {
             if (MoverLevel.Count != 0)
             {
-                MoverLevel[LevelIndex].MoveBack(StartPoint.transform.position);
+             //   MoverLevel[LevelIndex].MoveBack(StartPoint.transform.position);
             }
-            foreach (GameObject BG in BackGrounds)
+            foreach (BGScroller BG in BackGroundsScroller)
             {
-                BGScroller MCBG = BG.GetComponent<BGScroller>();
-                MCBG.Scroll();
+                BG.ScrollBack();
             }
         }
        // else 
@@ -116,7 +132,13 @@ public class LevelController : MonoBehaviour {
         { 
             MoverLevel [LevelIndex].LevelFinished (EndPoint.transform.position);
 		    LevelIndex = ( LevelIndex + 1 ) % ( MoverLevel.Count );
-		    Resetlevel();
+
+            if (PlayerPrefs.GetInt("ChapterReached", 1) >= Application.loadedLevel && PlayerPrefs.GetInt("LevelReached", 0) < LevelIndex)
+            {
+                PlayerPrefs.SetInt("LevelReached", LevelIndex);
+                PlayerPrefs.Save();
+            }
+            ResetNextlevel();
         }
 	}
 	//void OnMouseDown()
@@ -130,6 +152,7 @@ public class LevelController : MonoBehaviour {
 //	}
 	public void Resetlevel()
 	{
+        IsPlayerDead = false;
 		ResumeGame ();
         isRollingBack = false;
         MoverLevel[LevelIndex].gameObject.SetActive(true);
@@ -138,6 +161,17 @@ public class LevelController : MonoBehaviour {
         if (BossManager != null)
             BossManager.BroadcastMessage("TtiggerOnStartLevel", LevelIndex, SendMessageOptions.DontRequireReceiver);
 	}
+
+    public void ResetNextlevel()
+    {
+        ResumeGame();
+        isRollingBack = false;
+        MoverLevel[LevelIndex].gameObject.SetActive(true);
+        MoverLevel[LevelIndex].ResetLevel(StartPoint.transform.position, LevelIndex);
+        MoverLevel[LevelIndex].BroadcastMessage("TtiggerOnStartLevel", LevelIndex, SendMessageOptions.DontRequireReceiver);
+        if (BossManager != null)
+            BossManager.BroadcastMessage("TtiggerOnStartNextLevel", LevelIndex, SendMessageOptions.DontRequireReceiver);
+    }
 
 	public void PauseGame()
 	{
@@ -156,6 +190,10 @@ public class LevelController : MonoBehaviour {
 	public void ResumeGame()
 	{
 		isPaused = false;
+
+        MoverLevel[LevelIndex].BroadcastMessage("TtiggerGameIsResume", LevelIndex, SendMessageOptions.DontRequireReceiver);
+        if (BossManager != null)
+            BossManager.BroadcastMessage("TtiggerGameIsResume", LevelIndex, SendMessageOptions.DontRequireReceiver);
 	}
 
     void LoadNextScene()
@@ -164,13 +202,41 @@ public class LevelController : MonoBehaviour {
         if (Application.levelCount > Application.loadedLevel + 1)
         {
             int levelIndex = Application.loadedLevel + 1;
-            Application.LoadLevel(levelIndex);
+
+            if (PlayerPrefs.GetInt("ChapterReached", 1) < levelIndex)
+            {
+                PlayerPrefs.SetInt("LevelIndex", 0);
+                PlayerPrefs.SetInt("ChapterReached", levelIndex);
+                PlayerPrefs.SetInt("LevelReached", 0);
+                PlayerPrefs.Save();
+            }
+
+           // Application.LoadLevel(levelIndex);
+            AutoFade.LoadLevel(levelIndex, 0.5f, 0.7f, Color.black);
         }
             
         else 
         {
             //Game is finished !!!
         }
+    }
+
+    public void PlayerDide()
+    {
+        IsPlayerDead = true;
+    }
+
+    void OnGUI()
+    {
+        GUI.color = Color.white;
+
+        GUIStyle _style = GUI.skin.GetStyle("Label");
+        _style.alignment = TextAnchor.UpperLeft;
+        _style.fontSize = 20;
+
+       
+        GUI.Label(new Rect(20, 100, 200, 200), "Level : " + (LevelIndex+1));
+     
     }
 
 }

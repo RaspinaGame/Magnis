@@ -25,12 +25,14 @@ public class GameInfo : MonoBehaviour {
 			instance = this; //Make this object the only instance
 			DontDestroyOnLoad (gameObject); //Set as do not destroy
 		}
+
+//        Screen.sleepTimeout = SleepTimeout.NeverSleep;
 	}
 
 	// Use this for initialization
 	void Start () 
 	{
-	
+        Screen.sleepTimeout = SleepTimeout.NeverSleep;
 	}
 	
 	// Update is called once per frame
@@ -75,4 +77,30 @@ public class GameInfo : MonoBehaviour {
 	{
 		return levelController.IsPaused;
 	}
+
+    public static bool IsPlayerDead()
+    {
+        return levelController.IsPlayerDead;
+    }
+
+    
+    public static void PlayerDide()
+	{
+        levelController.PlayerDide();
+	}
+
+    public static bool IsRollingBack()
+    {
+        return levelController.IsRollingBack;
+    }
+
+    public static Vector3 GetLevelStartPostion()
+    {
+        return levelController.MoverLevel[levelController.LevelIndex].transform.position;
+    }
+
+    public static int GetLevelIndex()
+    {
+        return levelController.LevelIndex;
+    }
 }
