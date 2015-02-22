@@ -2,11 +2,13 @@
 using System.Collections;
 using System.Collections.Generic;
 
+
+[RequireComponent(typeof(BGAudioManager))]
 public class LevelController : MonoBehaviour {
 	
-	public GameObject StartPoint;
+	//public GameObject StartPoint;
 	public GameObject EndPoint;
-    public BGScroller[] BackGroundsScroller;
+    BGScroller[] BackGroundsScroller;
    // public GameObject mainCamera;
 
 	public MoverComponent[] MoverChildren;
@@ -16,8 +18,9 @@ public class LevelController : MonoBehaviour {
 
     public GameObject BossManager;
 
+  //  AudioSource BGAudioPlayer;
+
 	public int LevelIndex = 0;
-    public int editorLevelIndex = 0;
     private bool isRollingBack;
     public bool IsRollingBack
     {
@@ -37,11 +40,29 @@ public class LevelController : MonoBehaviour {
 
     public bool IsPlayerDead;
 
+    BGAudioManager AudioManager;
+
+    public GameObject anchorCenter;
+
+    bool startLevelTriger;
+
+    Transform cameraCashTransform;
+
+    void Awake()
+    {
+        GameInfo.SetLevelController (this);
+    }
+    
+    
+
 	// Use this for initialization
 	void Start () {
+        Screen.sleepTimeout = SleepTimeout.NeverSleep;
        // PlayerPrefs.DeleteKey("ChapterReached");
-		GameInfo.SetLevelController (this);
 
+        BackGroundsScroller = FindObjectsOfType<BGScroller>();
+
+        AudioManager = GetComponent<BGAudioManager>();
        // CameraMoverComponent = mainCamera.GetComponent<MoverComponent>();
 		MoverLevel = new List<MoverComponent> ();
 		MoverChildren = transform.GetComponentsInChildren<MoverComponent> ();
@@ -67,17 +88,20 @@ public class LevelController : MonoBehaviour {
 
         LevelIndex = PlayerPrefs.GetInt("LevelIndex", LevelIndex);
 
-        if (editorLevelIndex != 0)
-        {
-            LevelIndex = editorLevelIndex;
-        }
 
-		Resetlevel();
+        Startlevel();
+
+        AudioManager.levelStart(LevelIndex);
 		//ChildPositions = new ArrayList ();	
 		//foreach (MoverComponent CHPos in MoverChildren) 
 		//{
 		//	ChildPositions.Add( CHPos );
-		//}		 
+		//}		
+        PlayerPrefs.DeleteKey("LevelIndex");
+
+        cameraCashTransform = Camera.main.transform;
+
+        CreateBannerView();
 	}
 	
 	// Update is called once per frame
@@ -88,7 +112,15 @@ public class LevelController : MonoBehaviour {
             if (MoverLevel.Count != 0)
             {
               //  CameraMoverComponent.Move();
-               MoverLevel[LevelIndex].Move();
+                if (MoverLevel[LevelIndex].cashTransform.position.y - cameraCashTransform.position.y > MoverLevel[LevelIndex].offset.y)
+                {
+                    MoverLevel[LevelIndex].Move();
+                    if (startLevelTriger)
+                    {
+                        LateStartLevel();
+                        startLevelTriger = false;
+                    }
+                }
             }
             foreach (BGScroller BG in BackGroundsScroller)
             {
@@ -100,7 +132,7 @@ public class LevelController : MonoBehaviour {
         {
             if (MoverLevel.Count != 0)
             {
-             //   MoverLevel[LevelIndex].MoveBack(StartPoint.transform.position);
+                MoverLevel[LevelIndex].RollBack();
             }
             foreach (BGScroller BG in BackGroundsScroller)
             {
@@ -133,12 +165,12 @@ public class LevelController : MonoBehaviour {
             MoverLevel [LevelIndex].LevelFinished (EndPoint.transform.position);
 		    LevelIndex = ( LevelIndex + 1 ) % ( MoverLevel.Count );
 
-            if (PlayerPrefs.GetInt("ChapterReached", 1) >= Application.loadedLevel && PlayerPrefs.GetInt("LevelReached", 0) < LevelIndex)
+            if (PlayerPrefs.GetInt("ChapterReached", 2) >= Application.loadedLevel && PlayerPrefs.GetInt("LevelReached", 0) < LevelIndex)
             {
                 PlayerPrefs.SetInt("LevelReached", LevelIndex);
                 PlayerPrefs.Save();
             }
-            ResetNextlevel();
+            Startlevel();
         }
 	}
 	//void OnMouseDown()
@@ -155,22 +187,35 @@ public class LevelController : MonoBehaviour {
         IsPlayerDead = false;
 		ResumeGame ();
         isRollingBack = false;
+        MoverLevel[LevelIndex].ResetLevel(Camera.main.transform.position + (Vector3)MoverLevel[LevelIndex].offset, LevelIndex);
         MoverLevel[LevelIndex].gameObject.SetActive(true);
-        MoverLevel[LevelIndex].ResetLevel(StartPoint.transform.position, LevelIndex);
-        MoverLevel[LevelIndex].BroadcastMessage("TtiggerOnStartLevel", LevelIndex, SendMessageOptions.DontRequireReceiver);
+        MoverLevel[LevelIndex].BroadcastMessage("TriggerOnRestartLevel", LevelIndex, SendMessageOptions.DontRequireReceiver);
         if (BossManager != null)
-            BossManager.BroadcastMessage("TtiggerOnStartLevel", LevelIndex, SendMessageOptions.DontRequireReceiver);
+            BossManager.BroadcastMessage("TriggerOnRestartLevel", LevelIndex, SendMessageOptions.DontRequireReceiver);
 	}
 
-    public void ResetNextlevel()
+    public void Startlevel()
     {
         ResumeGame();
         isRollingBack = false;
+        MoverLevel[LevelIndex].ResetLevel(Camera.main.transform.position, LevelIndex);
         MoverLevel[LevelIndex].gameObject.SetActive(true);
-        MoverLevel[LevelIndex].ResetLevel(StartPoint.transform.position, LevelIndex);
-        MoverLevel[LevelIndex].BroadcastMessage("TtiggerOnStartLevel", LevelIndex, SendMessageOptions.DontRequireReceiver);
+        MoverLevel[LevelIndex].BroadcastMessage("TriggerOnStartLevel", LevelIndex, SendMessageOptions.DontRequireReceiver);
         if (BossManager != null)
-            BossManager.BroadcastMessage("TtiggerOnStartNextLevel", LevelIndex, SendMessageOptions.DontRequireReceiver);
+            BossManager.BroadcastMessage("TriggerOnStartLevel", LevelIndex, SendMessageOptions.DontRequireReceiver);
+
+        startLevelTriger = true;
+        AudioManager.levelStart(LevelIndex);
+
+        System.GC.Collect();
+    }
+
+
+    public void LateStartLevel()
+    {
+        MoverLevel[LevelIndex].BroadcastMessage("TriggerOnLateStartLevel", LevelIndex, SendMessageOptions.DontRequireReceiver);
+        if (BossManager != null)
+            BossManager.BroadcastMessage("TriggerOnLateStartLevel", LevelIndex, SendMessageOptions.DontRequireReceiver);
     }
 
 	public void PauseGame()
@@ -186,6 +231,8 @@ public class LevelController : MonoBehaviour {
         MoverLevel[LevelIndex].BroadcastMessage("TtiggerRollBack", LevelIndex, SendMessageOptions.DontRequireReceiver);
         if (BossManager != null)
             BossManager.BroadcastMessage("TtiggerRollBack", LevelIndex, SendMessageOptions.DontRequireReceiver);
+
+        System.GC.Collect();
     }
 	public void ResumeGame()
 	{
@@ -194,6 +241,8 @@ public class LevelController : MonoBehaviour {
         MoverLevel[LevelIndex].BroadcastMessage("TtiggerGameIsResume", LevelIndex, SendMessageOptions.DontRequireReceiver);
         if (BossManager != null)
             BossManager.BroadcastMessage("TtiggerGameIsResume", LevelIndex, SendMessageOptions.DontRequireReceiver);
+
+       // System.GC.Collect();
 	}
 
     void LoadNextScene()
@@ -201,23 +250,25 @@ public class LevelController : MonoBehaviour {
        // check to see if there is any level left to load
         if (Application.levelCount > Application.loadedLevel + 1)
         {
-            int levelIndex = Application.loadedLevel + 1;
+            int chapterIndex = Application.loadedLevel + 1;
 
-            if (PlayerPrefs.GetInt("ChapterReached", 1) < levelIndex)
+            PlayerPrefs.SetInt("LevelIndex", 0);
+            if (PlayerPrefs.GetInt("ChapterReached", 2) < chapterIndex)
             {
-                PlayerPrefs.SetInt("LevelIndex", 0);
-                PlayerPrefs.SetInt("ChapterReached", levelIndex);
-                PlayerPrefs.SetInt("LevelReached", 0);
-                PlayerPrefs.Save();
-            }
 
+                PlayerPrefs.SetInt("ChapterReached", chapterIndex);
+                PlayerPrefs.SetInt("LevelReached", 0);
+            }
+            PlayerPrefs.Save();
            // Application.LoadLevel(levelIndex);
-            AutoFade.LoadLevel(levelIndex, 0.5f, 0.7f, Color.black);
+            AutoFade.LoadLevel(chapterIndex, 1.5f, 1.5f, new Color(0f, 0.1f, 0.1f));
         }
             
         else 
         {
             //Game is finished !!!
+            AutoFade.LoadLevel("MainMenu", 1.5f, 0.7f, new Color(0f, 0.1f, 0.1f));
+
         }
     }
 
@@ -226,17 +277,45 @@ public class LevelController : MonoBehaviour {
         IsPlayerDead = true;
     }
 
-    void OnGUI()
+    public void SaveStars(int stars)
     {
-        GUI.color = Color.white;
+        int chapterIndex = Application.loadedLevel;
 
-        GUIStyle _style = GUI.skin.GetStyle("Label");
-        _style.alignment = TextAnchor.UpperLeft;
-        _style.fontSize = 20;
+        string s = "";
+        s += chapterIndex;
+        s += LevelIndex;
+
+        int saveStars = PlayerPrefs.GetInt(s,0);
+
+        if (saveStars < stars)
+        {
+            PlayerPrefs.SetInt(s, stars);
+        }
+    }
+
+    public static void CreateBannerView()
+    {
+     //   string verticalPosition = "top"; // "top" or "bottom"
+     //   string horizontalPosition = "center"; // "left", "right" or "center"
+     //   AndroidJavaClass playerClass = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
+     //   AndroidJavaObject activity = playerClass.GetStatic<AndroidJavaObject>("currentActivity");
+     //   AndroidJavaClass pluginClass = new AndroidJavaClass("ir.adad.AdadUnityPlugin");
+     ////   pluginClass.CallStatic("setDisabled", new object[1] { "true" });
+     //   pluginClass.CallStatic("createAdView",
+     //                          new object[3] { activity, verticalPosition, horizontalPosition });
+    } 
+
+    //void OnGUI()
+    //{
+    //    GUI.color = Color.white;
+
+    //    GUIStyle _style = GUI.skin.GetStyle("Label");
+    //    _style.alignment = TextAnchor.UpperLeft;
+    //    _style.fontSize = 20;
 
        
-        GUI.Label(new Rect(20, 100, 200, 200), "Level : " + (LevelIndex+1));
+    //    GUI.Label(new Rect(20, 100, 200, 200), "Level : " + (LevelIndex+1));
      
-    }
+    //}
 
 }

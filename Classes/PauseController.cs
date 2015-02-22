@@ -6,11 +6,22 @@ public class PauseController : MonoBehaviour
 {
 
     public Animator PanleAnim;
+    public RectTransform pauseButton;
+    public RectTransform canvas;
+    public Image pauseButtonImage;
+
+    bool bIsPaused;
+    AudioSource bgMusic;
 
 	// Use this for initialization
 	void Start () 
     {
-	
+//        print(Camera.main.WorldToScreenPoint(new Vector2(10, 0)));
+        if (pauseButton != null)
+            pauseButton.anchoredPosition = new Vector2(Camera.main.WorldToScreenPoint(new Vector2(10, 0)).x / canvas.localScale.x
+                , Camera.main.WorldToScreenPoint(new Vector2(0, 16.5f)).y / canvas.localScale.y);
+
+        bgMusic = GameObject.FindGameObjectWithTag("LevelController").GetComponent<AudioSource>();
 	}
 	
 	// Update is called once per frame
@@ -23,30 +34,7 @@ public class PauseController : MonoBehaviour
     {
         if (Input.GetMouseButtonDown(0))
         {
-            if (!GameInfo.IsPlayerDead())
-            {
-                if (GameInfo.IsGamePaused())
-                {
-                   //  GameInfo.ResumeGame();
-                   // PanleAnim.SetInteger("Pause", 0);
-                    // Time.timeScale = 1;
-                }
-                else
-                {
-                    if (GameInfo.IsRollingBack())
-                    {
-                        //
-                    }
-                    else
-                    {
-                        GameInfo.PauseGame();
-                        PanleAnim.SetInteger("Pause", 1);
-                        Invoke("ZeroTimeScale",0.15f);
-                        
-                    }
-                     
-                }
-            }
+            Pause();
         }
     }
 
@@ -57,29 +45,88 @@ public class PauseController : MonoBehaviour
 
     public void OnMouseClick()
     {
-        if (!GameInfo.IsPlayerDead())
+        Resume();
+    }
+
+    void OnApplicationFocus(bool focus)
+    {
+       // print("OnApplicationFocus" + focus);
+        if (!Application.isEditor)
         {
-            if (GameInfo.IsGamePaused())
+            Pause();
+            AudioListener.pause = true;
+            bgMusic.Play();
+        }
+    }
+
+    void OnApplicationPause(bool pause)
+    {
+        if (!Application.isEditor)
+        {
+            Pause();
+            AudioListener.pause = true;
+            bgMusic.Play();
+        }
+    }
+
+    public void Pause()
+    {
+        if (GameInfo.IsLevelControllerPresent())
+        {
+
+            if (!GameInfo.IsPlayerDead() && !GameInfo.IsGamePaused() && !GameInfo.IsRollingBack())
             {
-                GameInfo.ResumeGame();
-                PanleAnim.SetInteger("Pause", 0);
-                Time.timeScale = 1;
+                GameInfo.PauseGame();
+                DoPause();
             }
-            else
+        }
+        else
+        {
+            if (!bIsPaused)
             {
-                if (GameInfo.IsRollingBack())
-                {
-                    //
-                }
-                else
-                {
-          //          GameInfo.PauseGame();
-          //          PanleAnim.SetInteger("Pause", 1);
-                }
+                DoPause();
             }
         }
     }
 
+    public void Resume()
+    {
+        if (GameInfo.IsLevelControllerPresent())
+        {
+            if (GameInfo.IsGamePaused())
+            {
+                GameInfo.ResumeGame();
+                DoResume();
+            }
+        }
+        else
+        {
+            if (bIsPaused)
+            {
+                DoResume();
+            }
+        }
+    }
 
+    void DoPause()
+    {
+        AudioListener.pause = true;
+        bgMusic.Play();
+        PanleAnim.SetInteger("Pause", 1);
+        Invoke("ZeroTimeScale", 0.15f);
+        pauseButtonImage.enabled = false;
+        bIsPaused = true;
+        Screen.sleepTimeout = SleepTimeout.SystemSetting;
+    }
+
+    void DoResume()
+    {
+        PanleAnim.SetInteger("Pause", 0);
+        Time.timeScale = 1;
+        pauseButtonImage.enabled = true;
+        AudioListener.pause = false;
+        bIsPaused = false;
+        Screen.sleepTimeout = SleepTimeout.NeverSleep;
+    }
 
 }

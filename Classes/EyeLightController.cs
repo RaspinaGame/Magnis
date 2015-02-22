@@ -4,20 +4,30 @@ using System.Collections;
 public class EyeLightController : MonoBehaviour {
 
     public float intensity = 1;
+
+    Renderer eyeLightChild;
 	// Use this for initialization
 	void Start () 
     {
-	
+        if (transform.childCount > 0)
+            eyeLightChild = transform.GetChild(0).GetComponent<Renderer>();
 	}
 	
 	// Update is called once per frame
 	void Update () 
     {
-        Color tempColor;
+       // if(eyeLightChild != null)
+        //    eyeLightChild.intensity = intensity;
 
-        tempColor = renderer.material.color;
+        Color tempColor;
+        tempColor = renderer.materials[0].color;
         tempColor.a = intensity;
-        renderer.material.color = tempColor;
-	
+        renderer.materials[0].color = tempColor;
+
+        if (eyeLightChild != null)
+        {
+           // eyeLightChild.material.color = tempColor;
+            eyeLightChild.materials[0].color = tempColor;
+        }
 	}
 }

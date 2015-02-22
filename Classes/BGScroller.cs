@@ -8,10 +8,13 @@ public class BGScroller : MonoBehaviour {
 
     public Vector3 startPosition;
 
+    Transform cashTransform;
+
 	// Use this for initialization
 	void Awake()
 	{
-        startPosition = transform.localPosition;
+        cashTransform = transform;
+        startPosition = cashTransform.localPosition;
 	}
 	
 	void Start() 
@@ -29,15 +32,15 @@ public class BGScroller : MonoBehaviour {
     public void Scroll()
     {
         RepeatTime += Time.deltaTime;
-       // RepeatTime += Time.smoothDeltaTime;
-        transform.localPosition = new Vector3(startPosition.x, Mathf.Repeat(RepeatTime * scrollSpeed, tileSizeY / 2f) + startPosition.y, startPosition.z);
+      //  RepeatTime += Time.smoothDeltaTime;
+        cashTransform.localPosition = new Vector3(startPosition.x, Mathf.Repeat(RepeatTime * scrollSpeed, tileSizeY / 2f) + startPosition.y, startPosition.z);
     }
 
     public void ScrollBack()
     {
         RepeatTime -= Time.deltaTime * 2;
-        //RepeatTime -= Time.smoothDeltaTime * 2;
-        transform.localPosition = new Vector3(startPosition.x, Mathf.Repeat(RepeatTime * scrollSpeed, tileSizeY / 2f) + startPosition.y, startPosition.z);
+      //  RepeatTime -= Time.smoothDeltaTime * 2;
+        cashTransform.localPosition = new Vector3(startPosition.x, Mathf.Repeat(RepeatTime * scrollSpeed, tileSizeY / 2f) + startPosition.y, startPosition.z);
     }
 
     

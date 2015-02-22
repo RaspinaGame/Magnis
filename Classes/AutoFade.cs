@@ -17,6 +17,7 @@ public class AutoFade : MonoBehaviour
             if (m_Instance == null)
             {
                 m_Instance = (new GameObject("AutoFade")).AddComponent<AutoFade>();
+               // m_Instance.renderer.material.sort BlackQuad;
             }
             return m_Instance;
         }
@@ -41,10 +42,10 @@ public class AutoFade : MonoBehaviour
         GL.LoadOrtho();
         GL.Begin(GL.QUADS);
         GL.Color(aColor);   // moved here, needs to be inside begin/end
-        GL.Vertex3(0, 0, -1);
-        GL.Vertex3(0, 1, -1);
-        GL.Vertex3(1, 1, -1);
-        GL.Vertex3(1, 0, -1);
+        GL.Vertex3(0, 0, 0);
+        GL.Vertex3(0, 1, 0);
+        GL.Vertex3(1, 1, 0);
+        GL.Vertex3(1, 0, 0);
         GL.End();
         GL.PopMatrix();
     }

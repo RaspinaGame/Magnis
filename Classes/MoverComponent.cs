@@ -7,13 +7,17 @@ public class MoverComponent : MonoBehaviour {
 	public Vector2 Direction;
 	public bool IsBackground;
     public bool isMovable = false;
+    public Vector2 offset;
 
 	public List<MoverComponent> MoverObstacles;
     Vector3 startingPosition;
 
+    public Transform cashTransform;
+
     void Awake()
     {
-        startingPosition = transform.localPosition;
+        cashTransform = transform;
+        startingPosition = cashTransform.localPosition;
     }
     
     
@@ -32,13 +36,25 @@ public class MoverComponent : MonoBehaviour {
 	public void Move()
 	{
         if (isMovable)
-		    transform.Translate (Direction * Time.deltaTime);
+            cashTransform.Translate(Direction * Time.deltaTime);
 		foreach (MoverComponent MC in MoverObstacles)
 		{
 			MC.Move();
 		}
 
 	}
+
+    public void RollBack()
+    {
+        if (isMovable)
+            cashTransform.Translate(Direction * Time.deltaTime * -10f);
+        foreach (MoverComponent MC in MoverObstacles)
+        {
+            MC.RollBack();
+        }
+
+    }
+
     public void MoveBack(Vector3 StartPoint,float timeToMoveBack,float timeElapsed,Vector3 DiePosition)
 	{
         //transform.Translate(-Direction * Time.deltaTime * Mathf.Max(Mathf.Abs(StartPoint.y / 2f), 0.8f));
@@ -47,7 +63,7 @@ public class MoverComponent : MonoBehaviour {
       //  transform.Translate(((StartPoint - transform.position) / timeToMoveBack) * Time.deltaTime);
 
         Vector3 vAvg = ((StartPoint - DiePosition) / timeToMoveBack);
-        transform.position = ((-vAvg / timeToMoveBack * (timeElapsed * timeElapsed)) + (2f * vAvg * timeElapsed) + DiePosition);
+        cashTransform.position = ((-vAvg / timeToMoveBack * (timeElapsed * timeElapsed)) + (2f * vAvg * timeElapsed) + DiePosition);
         //foreach (MoverComponent MC in MoverObstacles)
         //{
         //    MC.MoveBack(StartPoint);
@@ -58,24 +74,25 @@ public class MoverComponent : MonoBehaviour {
 	{
 		Vector3 tempVec;
 		tempVec = StartPoint;
-		tempVec.z = transform.position.z;
-		transform.position = tempVec;
+      //  tempVec += (Vector3)offset;
+        tempVec.z = cashTransform.position.z;
+        cashTransform.position = tempVec;
 
         foreach(MoverComponent MC in MoverObstacles )
 		{
-            MC.ResetChildren(StartPoint);
+            MC.ResetChildren();
 		}
        // BroadcastMessage("TtiggerOnStartLevel", levelIndex, SendMessageOptions.DontRequireReceiver);
 	}
 
-    public void ResetChildren(Vector3 StartPoint)
+    public void ResetChildren()
     {
-        transform.localPosition = startingPosition;
+        cashTransform.localPosition = startingPosition;
     }
 		
 	public void LevelFinished(Vector3 EndPoint)
 	{
-        transform.localPosition = startingPosition ;
+        cashTransform.localPosition = startingPosition;
 	}
 
 	public void AddToMoverChildrenObstacle(MoverComponent MC)

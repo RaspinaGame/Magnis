@@ -17,6 +17,8 @@ public class ExitController : MonoBehaviour {
     {
         Time.timeScale = 1;
        // Application.LoadLevel("MainMenu");
-        AutoFade.LoadLevel("MainMenu", 0.2f, 0.7f, Color.black);
+      //  AudioListener.pause = false;
+        AutoFade.LoadLevel("MainMenu", 0.4f, 0.6f, Color.black);
+        
     }
 }

@@ -75,26 +75,33 @@ public class OAManager : MonoBehaviour
     //    }
     //}
 
-    public void TtiggerOnStartLevel(int levelIndex)
+    public void TriggerOnStartLevel(int levelIndex)
     {
 
         foreach (ObstacleAnimator obstacleAnimator in obstacleAnimators)
         {
             obstacleAnimator.OnStartLevel(levelIndex);
         }
-
-        triggerdObstacleAnimators.Clear();
     }
 
-    public void TtiggerOnStartNextLevel(int levelIndex)
+    public void TriggerOnRestartLevel(int levelIndex)
     {
 
         foreach (ObstacleAnimator obstacleAnimator in obstacleAnimators)
         {
-            obstacleAnimator.OnStartNextLevel(levelIndex);
+            obstacleAnimator.OnRestartLevel(levelIndex);
         }
 
         triggerdObstacleAnimators.Clear();
+    }
+
+    public void TriggerOnLateStartLevel(int levelIndex)
+    {
+
+        foreach (ObstacleAnimator obstacleAnimator in obstacleAnimators)
+        {
+            obstacleAnimator.OnLateStartLevel(levelIndex);
+        }
     }
 
     public void TtiggerGameIsPused(int levelIndex)

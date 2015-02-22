@@ -6,7 +6,7 @@ public class BossAnimator : ObstacleAnimator {
 
     public int levelNumber;
 
-    public override void OnStartLevel(int levelIndex)
+    public override void OnRestartLevel(int levelIndex)
     {
 
         // anim.Stop();

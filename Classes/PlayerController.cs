@@ -10,7 +10,7 @@ public class PlayerController : MonoBehaviour {
     public LineRenderer anchorLine;
     public GameObject fingerHead;
     public GameObject anchorCenter;
-    public GameObject anchorHead;
+  //  public GameObject anchorHead;
     public Animator anim;
     public float scaleRate = 0.5f;
     public float regenDelay = 5f;
@@ -26,12 +26,13 @@ public class PlayerController : MonoBehaviour {
     public LineRenderer[] lightRenderer;
     float[] lightRendererTimeStamp;
 
-    public GameObject mainCamera;
+    
 
     public FXController fXController;
 
 	private Vector3 DesiredPosition;
     public int scaleState;
+    int scaleReached;
     private Quaternion starttingRotation;
     private bool bIsInContact;
     private bool bIsContactWithWall;
@@ -52,27 +53,42 @@ public class PlayerController : MonoBehaviour {
     //Vector2 collisionpoint;
     //MoverComponent colliderMoverComponent;
     public Button pauseButton;
+
+    Transform anchorCenterCashTransform;
+    Camera mainCamera;
+    Transform fingerHeadCashTransform;
+    Transform bodyCashTransform;
+    Transform cashTransform;
+    Rigidbody2D cashRigidbody2D;
+
+    //public Sprite solidStarSprite;
+    //public Sprite emptyStarSprite;
+
+    StarManager starManager;
+
 	// Use this for initialization
 	void Start () 
 	{
         DisableLightRenderer();
         lightRendererTimeStamp = new float[lightRenderer.Length];
-        //anchorCenter.transform.position = GetBasePosition();
-        starttingRotation = transform.rotation;
+        cashTransform = transform;
+        starttingRotation = cashTransform.rotation;
 
         anchorCenterMoverComponent = anchorCenter.GetComponent<MoverComponent>();
+        anchorCenterCashTransform = anchorCenter.transform;
+        fingerHeadCashTransform = fingerHead.transform;
+        bodyCashTransform = Body.transform;
+        cashRigidbody2D = rigidbody2D;
+        mainCamera = Camera.main;
+
+        starManager = FindObjectOfType<StarManager>();
 
         resertToInitial();
 	}
 
 	Vector3 GetBasePosition()
 	{
-		//Camera MyCamera = FindObjectOfType<Camera> ();
-		//return MyCamera.transform.position;
-		//return transform.parent.position;
-       // return mainCamera.transform.position;
-        return anchorCenter.transform.position;
-        //return new Vector3(mainCamera.transform.position.x,mainCamera.transform.position.y,-2);
+        return anchorCenterCashTransform.position;
 	}
 
 	Vector3 GetInput()
@@ -101,46 +117,27 @@ public class PlayerController : MonoBehaviour {
     Vector3 FinalPosition, TouchWorldPosition;//, BasePosition;
 	void ProcessTouch(Vector3 InputPosition)
 	{
-		
-
         if (InputPosition != new Vector3(-1000, -1000, -1000))
         {
             Vector3 localTouchWorldPosition;
 
-            TouchWorldPosition = Camera.main.ScreenToWorldPoint(InputPosition);
-            //TouchWorldPosition = Vector3.Lerp(TouchWorldPosition, Camera.main.ScreenToWorldPoint(InputPosition),0.9f);
+            TouchWorldPosition = mainCamera.ScreenToWorldPoint(InputPosition);
             TouchWorldPosition.x = Mathf.Clamp(TouchWorldPosition.x, Xmin, Xmax);
-            localTouchWorldPosition = anchorCenter.transform.InverseTransformPoint(TouchWorldPosition);
+            localTouchWorldPosition = anchorCenterCashTransform.InverseTransformPoint(TouchWorldPosition);
             localTouchWorldPosition.y = Mathf.Clamp(localTouchWorldPosition.y, Ymin, Ymax);
-            TouchWorldPosition = anchorCenter.transform.TransformPoint(localTouchWorldPosition);
-          //  anchorLine.SetPosition(1, new Vector3(TouchWorldPosition.x, TouchWorldPosition.y, -1));
-            fingerHead.transform.position = new Vector3(TouchWorldPosition.x, TouchWorldPosition.y, -2);
+            TouchWorldPosition = anchorCenterCashTransform.TransformPoint(localTouchWorldPosition);
+            fingerHeadCashTransform.position = new Vector3(TouchWorldPosition.x, TouchWorldPosition.y, -2);
             BasePosition = GetBasePosition();
             TouchWorldPosition.z = -2;
             FinalPosition = BasePosition + BasePosition - TouchWorldPosition;
-            //FinalPosition = - TouchWorldPosition;
-           // DesiredPosition = FinalPosition;
             DesiredPosition = FinalPosition;
-            
-
-            /// debug
-            //		print (transform.parent.name + TouchWorldPosition  + BasePosition.ToString() + FinalPosition.ToString());
-            //DTouchWorldPosition = TouchWorldPosition.ToString();
-            //DFinalPosition = FinalPosition.ToString();
         }
         else 
         {
-            //anchorLine.SetPosition(1, new Vector3(TouchWorldPosition.x, TouchWorldPosition.y, -1));
-            //fingerHead.transform.localPosition = new Vector3(TouchWorldPosition.x, TouchWorldPosition.y, -1);
-           // BasePosition = GetBasePosition();
-          //  TouchWorldPosition.z = -2;
             BasePosition = GetBasePosition();
-            FinalPosition = BasePosition + BasePosition - fingerHead.transform.position;
+            FinalPosition = BasePosition + BasePosition - fingerHeadCashTransform.position;
             DesiredPosition = FinalPosition;
-            //FinalPosition = - TouchWorldPosition;
-          //  DesiredPosition = FinalPosition;
         }
-        // Vector3.Lerp(DesiredPosition, FinalPosition, 0.9f);
 	}
 
     // Update is called once per frame
@@ -149,36 +146,18 @@ public class PlayerController : MonoBehaviour {
 		if ( !GameInfo.IsGamePaused() )
 		{
             anchorCenterMoverComponent.Move();
-           // BasePosition += Direction * Time.smoothDeltaTime;
-           // anchorCenter.transform.position = GetBasePosition();
-			
-			//print ( transform.position + " " + DesiredPosition + " " + MovmentSpeed );
-            //rigidbody2D.position = Vector3.Lerp(rigidbody2D.position, DesiredPosition, 0.1f);
             ProcessTouch ( GetInput() );
             anchorLine.SetPosition(0, new Vector3(DesiredPosition.x, DesiredPosition.y, -2));
-            anchorLine.SetPosition(1, new Vector3(fingerHead.transform.position.x, fingerHead.transform.position.y, -2));
-            anchorHead.transform.position = new Vector3(DesiredPosition.x, DesiredPosition.y, -2);
-
-           // EyeSocket.transform.localPosition = rigidbody2D.velocity/5f;
-          //  float y = Mathf.Lerp(EyeSocket.transform.localPosition.y, rigidbody2D.velocity.normalized.y ,0.05f);
-           // EyeSocket.transform.localPosition = new Vector3(EyeSocket.transform.localPosition.x, y, EyeSocket.transform.localPosition.z);
-
-         //   EyeSocket.transform.localPosition = Vector3.Lerp(EyeSocket.transform.localPosition, rigidbody2D.velocity.normalized - Vector2.up, 0.03f);
+            anchorLine.SetPosition(1, new Vector3(fingerHeadCashTransform.position.x, fingerHeadCashTransform.position.y, -2));
+           // anchorHead.transform.position = new Vector3(DesiredPosition.x, DesiredPosition.y, -2);
 
 
-            if (rigidbody2D.velocity.x > 0)
-                Body.transform.rotation = Quaternion.Slerp(Body.transform.rotation, Quaternion.AngleAxis(Vector3.Angle(Vector3.down, rigidbody2D.velocity.normalized - Vector2.up * 0.5f), Vector3.forward), 0.08f);
+            if (cashRigidbody2D.velocity.x > 0)
+                bodyCashTransform.rotation = Quaternion.Slerp(bodyCashTransform.rotation, Quaternion.AngleAxis(Vector3.Angle(Vector3.down, cashRigidbody2D.velocity.normalized - Vector2.up * 0.5f), Vector3.forward), 0.08f);
             else
-                Body.transform.rotation = Quaternion.Slerp(Body.transform.rotation, Quaternion.AngleAxis(-Vector3.Angle(Vector3.down, rigidbody2D.velocity.normalized - Vector2.up*0.5f), Vector3.forward), 0.08f);
+                bodyCashTransform.rotation = Quaternion.Slerp(bodyCashTransform.rotation, Quaternion.AngleAxis(-Vector3.Angle(Vector3.down, cashRigidbody2D.velocity.normalized - Vector2.up * 0.5f), Vector3.forward), 0.08f);
 
-             //   Quaternion.Slerp(Body.transform.rotation, Quaternion.FromToRotation(Vector3.down, rigidbody2D.velocity.normalized), 0.1f);
-            //Body.transform.rotation = Quaternion.Lerp(Body.transform.rotation, Quaternion.FromToRotation(Vector3.down, rigidbody2D.velocity.normalized), 0.1f);
-
-         //   Debug.DrawRay(Body.transform.position, rigidbody2D.velocity.normalized - Vector2.up );
-
-          //  EyeSocket.transform.rotation = Quaternion.Lerp(EyeSocket.transform.rotation, Quaternion.FromToRotation(Vector3.down, rigidbody2D.velocity - Vector2.up), 0.008f);
-           // EyeLight.transform.rotation = Quaternion.Lerp(EyeLight.transform.rotation, Quaternion.LookRotation(Vector3.forward), 0.05f);
-          //  EyeLight.transform.rotation = Quaternion.Lerp(EyeLight.transform.rotation, Quaternion.FromToRotation(rigidbody2D.velocity,Vector3.down) , 0.01f);
+          
 
             if (Time.time - lastScaleDownTime > regenDelay)
             {
@@ -189,25 +168,17 @@ public class PlayerController : MonoBehaviour {
 		}
         else if (GameInfo.IsRollingBack())
         {
-           // (GameInfo.GetLevelStartPostion() - anchorCenter.transform.position)/1.1f
             anchorCenterMoverComponent.MoveBack(GameInfo.GetLevelStartPostion(), timeToMoveBack, timeElapsed, AnchorCenterDiePosition);
             MagnisRollBack(GameInfo.GetLevelStartPostion(), timeToMoveBack, timeElapsed, MagnisDiePosition);
-            //ProcessTouch(GetBasePosition());
-           // DesiredPosition = GetBasePosition();
-           // transform.Translate((GameInfo.GetLevelStartPostion() - transform.position) * Time.deltaTime );
-          //  Vector3 vAvg = ((GameInfo.GetLevelStartPostion() - AnchorCenterDiePosition) / timeToMoveBack);
-          //  transform.position = ((-vAvg / timeToMoveBack * (timeElapsed * timeElapsed)) + (2f * vAvg * timeElapsed) + DiePosition);
-          //  transform.Translate((GameInfo.GetLevelStartPostion() - transform.position) / timeToMoveBack * Time.deltaTime);
-          //  timeToMoveBack -= Time.deltaTime;
             timeElapsed += Time.deltaTime;
-            if ((anchorCenter.transform.position- GameInfo.GetLevelStartPostion()).sqrMagnitude < 3f)
+            if ((anchorCenterCashTransform.position - GameInfo.GetLevelStartPostion()).sqrMagnitude < 3f)
             {
                 GameOver();
             }
         }
 
-		if (Input.GetKey (KeyCode.Escape)) 
-			Application.LoadLevel (0);
+	//	if (Input.GetKey (KeyCode.Escape)) 
+		//	Application.LoadLevel (0);
 
         ManageLightRenderers();
 	}
@@ -215,7 +186,7 @@ public class PlayerController : MonoBehaviour {
     void MagnisRollBack(Vector3 StartPoint,float timeToMoveBack,float timeElapsed,Vector3 DiePosition)
     {
         Vector3 vAvg = ((StartPoint - DiePosition) / timeToMoveBack);
-        transform.position = ((-vAvg / timeToMoveBack * (timeElapsed * timeElapsed)) + (2f * vAvg * timeElapsed) + DiePosition);
+        cashTransform.position = ((-vAvg / timeToMoveBack * (timeElapsed * timeElapsed)) + (2f * vAvg * timeElapsed) + DiePosition);
     }
 
     void FixedUpdate()
@@ -249,21 +220,17 @@ public class PlayerController : MonoBehaviour {
     {
         RaycastHit2D traceinfo;
 
-        velocity = rigidbody2D.velocity;
-        Vector3.SmoothDamp(rigidbody2D.position, inDesiredPosition, ref velocity, 0.015f, 3000f, Time.fixedDeltaTime);
-       // Vector3.SmoothDamp(rigidbody2D.position, inDesiredPosition, ref velocity, 0.015f, 3000f, Time.smoothDeltaTime);
+        velocity = cashRigidbody2D.velocity;
+        Vector3.SmoothDamp(cashRigidbody2D.position, inDesiredPosition, ref velocity, 0.015f, 3000f, Time.fixedDeltaTime);
        
         if (bIsInContact)
         {
 
-            traceinfo = Physics2D.Raycast(rigidbody2D.position, velocity, scaleState + 1f, LayerMask.GetMask("obstacle"));
-           // Debug.DrawRay(rigidbody2D.position, traceinfo.normal, Color.red);
-           // print(traceinfo.collider);
+            traceinfo = Physics2D.Raycast(cashRigidbody2D.position, velocity, scaleState + 1f, LayerMask.GetMask("obstacle"));
             if (traceinfo.collider != null)
             {
                 Vector3 newVelocity;
 
-             //   Debug.DrawRay(rigidbody2D.position, lastVelocity, Color.yellow);
                 newVelocity = (velocity + lastVelocity) / 2f;
                 lastVelocity = velocity;
                 velocity = newVelocity;
@@ -276,16 +243,9 @@ public class PlayerController : MonoBehaviour {
                    velocity.y = Mathf.Lerp(0f, velocity.y, Mathf.Max(Mathf.Pow(newVelocity.magnitude / 600f, 2f), 0.1f));
                 }
             }
-            //Debug.DrawRay(rigidbody2D.position, Vector2.right * 10f, Color.green);
          }
-        //velocity -=new Vector3(0,100,0);
-
-        rigidbody2D.velocity = Vector3.Lerp(rigidbody2D.velocity, velocity, 0.8f);
-
+        cashRigidbody2D.velocity = velocity;
         
-
-         //rigidbody2D.AddRelativeForce(new Vector2(0,100));
-         //Debug.DrawRay(rigidbody2D.position, velocity);
     }
 
 
@@ -390,7 +350,17 @@ public class PlayerController : MonoBehaviour {
     void ScaleUp()
     {
         if (scaleState < 7)
+        {
             scaleState++;
+            if (scaleState > 0)
+            {
+                fXController.ChageScale(scaleState);
+                if (scaleReached < scaleState)
+                {
+                    scaleReached = scaleState;
+                }
+            }
+        }
         else
         {
             Die("Scale");
@@ -404,6 +374,7 @@ public class PlayerController : MonoBehaviour {
         {
             scaleState = 0;
             anim.SetInteger("scaleState", scaleState);
+            fXController.RegenerationFX();
         }
     }
 
@@ -443,71 +414,79 @@ public class PlayerController : MonoBehaviour {
             //collider2D.
           //  GameInfo.LevelFinished();
         }
+        else if (other.gameObject.tag == "obstacle")
+        {
+            StopCoroutine("lightRendererPointFinder");
+        }
        
     }
 
     float lightRendererPointFindingTimeStamp;
     void OnTriggerStay2D(Collider2D other)
     {
-        if (other.gameObject.tag == "obstacle" && Time.time - lightRendererPointFindingTimeStamp > 0.3f && !GameInfo.IsGamePaused())
+        if (other.gameObject.tag == "obstacle" && !GameInfo.IsGamePaused() && Time.time - lightRendererPointFindingTimeStamp > 0.3f)// &&
         {
-            // Die("");
-            Collider2D[] colliders = other.gameObject.GetComponents<Collider2D>();
-
-            // print(colliders.Length);
-
-            for (int i = 0; i < colliders.Length; i++)
-            {
-                Vector2 nearestPoint = Vector2.zero;
-                Vector2 nearestPoint1 = Vector2.zero;
-                Vector2 nearestPoint2 = Vector2.zero;
-
-                Vector2 direction = colliders[i].bounds.center;
-                // nearestPoint = colliders[i].bounds.center;
-                direction -= rigidbody2D.position;
-
-                // 
-
-                // Vector2.
-                RaycastHit2D traceinfo;
-                for (int j = -2; j < 2; j++)
-                {
-                    traceinfo = Physics2D.Raycast(rigidbody2D.position, Quaternion.AngleAxis(j * 35f, Vector3.forward) * direction.normalized, 3f, LayerMask.GetMask("obstacle"));
-
-                    if ((rigidbody2D.position - traceinfo.point).sqrMagnitude < (rigidbody2D.position - nearestPoint).sqrMagnitude)
-                    {
-                        //    nearestPoint2 = nearestPoint1;
-                        nearestPoint1 = nearestPoint;
-                        nearestPoint = traceinfo.point;
-                    }
-                    if (nearestPoint != Vector2.zero || nearestPoint1 != Vector2.zero || nearestPoint2 != Vector2.zero)
-                    {
-                        lightRendererPointFindingTimeStamp = Time.time;
-                    }
-                    // Debug.DrawLine(rigidbody2D.position, traceinfo.point,Color.yellow);
-                }
-
-                if (nearestPoint != Vector2.zero)
-                    SetLightRenderer(nearestPoint);
-                // Debug.DrawLine(rigidbody2D.position, nearestPoint,Color.red);
-                if (nearestPoint1 != Vector2.zero)
-                    SetLightRenderer(nearestPoint1);
-                //Debug.DrawLine(rigidbody2D.position, nearestPoint1, Color.red);
-                if (nearestPoint2 != Vector2.zero)
-                    SetLightRenderer(nearestPoint2);
-                //Debug.DrawLine(rigidbody2D.position, nearestPoint2, Color.red);
-
-
-            }
-
-            // traceinfo.point;
+            StartCoroutine(lightRendererPointFinder(other));
         }
     }
+
+    private IEnumerator lightRendererPointFinder(Collider2D other)
+    {
+        Collider2D[] colliders = other.gameObject.GetComponents<Collider2D>();
+
+        // print(colliders.Length);
+
+        for (int i = 0; i < colliders.Length; i++)
+        {
+            Vector2 nearestPoint = Vector2.zero;
+            Vector2 nearestPoint1 = Vector2.zero;
+            Vector2 nearestPoint2 = Vector2.zero;
+
+            Vector2 direction = colliders[i].bounds.center;
+            // nearestPoint = colliders[i].bounds.center;
+            direction -= cashRigidbody2D.position;
+
+            // 
+
+            // Vector2.
+            RaycastHit2D traceinfo;
+            for (int j = -2; j < 2; j++)
+            {
+                traceinfo = Physics2D.Raycast(cashRigidbody2D.position, Quaternion.AngleAxis(j * 50f, Vector3.forward) * direction.normalized, 3f, LayerMask.GetMask("obstacle"));
+               // Debug.DrawLine(cashRigidbody2D.position, Quaternion.AngleAxis(j * 50f, Vector3.forward) * direction.normalized,,);
+
+                if ((cashRigidbody2D.position - traceinfo.point).sqrMagnitude < (cashRigidbody2D.position - nearestPoint).sqrMagnitude)
+                {
+                    //    nearestPoint2 = nearestPoint1;
+                    nearestPoint1 = nearestPoint;
+                    nearestPoint = traceinfo.point;
+                }
+                if (nearestPoint != Vector2.zero || nearestPoint1 != Vector2.zero || nearestPoint2 != Vector2.zero)
+                {
+                    lightRendererPointFindingTimeStamp = Time.time;
+                }
+                
+                yield return new WaitForEndOfFrame();
+            }
+
+            if (nearestPoint != Vector2.zero)
+                SetLightRenderer(nearestPoint);
+            if (nearestPoint1 != Vector2.zero)
+                SetLightRenderer(nearestPoint1);
+            if (nearestPoint2 != Vector2.zero)
+                SetLightRenderer(nearestPoint2);
+
+            yield return new WaitForEndOfFrame();
+        }
+         
+    }
+
     int rendererIndex;
     void SetLightRenderer(Vector2 inPosition)
     {
         rendererIndex %= lightRenderer.Length;
         lightRenderer[rendererIndex].enabled = true;
+        fXController.LightningSFX();
         lightRenderer[rendererIndex].SetPosition(1, inPosition);
         lightRendererTimeStamp[rendererIndex] = Time.time;
         rendererIndex++;
@@ -518,7 +497,7 @@ public class PlayerController : MonoBehaviour {
     {
         for (int i = 0; i < lightRenderer.Length; i++)
         {
-            lightRenderer[i].SetPosition(0, transform.position);
+            lightRenderer[i].SetPosition(0, cashTransform.position);
             if (Time.time - lightRendererTimeStamp[i] > 0.35f)
             {
                 lightRenderer[i].enabled = false;
@@ -543,26 +522,30 @@ public class PlayerController : MonoBehaviour {
 	}
     void resertToInitial()
     {
-        transform.rotation = starttingRotation;
+        cashTransform.rotation = starttingRotation;
         collider2D.enabled = true;
         renderer.enabled = true;
         Body.renderer.enabled = true;
         EyeSocket.renderer.enabled = true;
-        EyeLight.renderer.enabled = true;
-        fingerHead.renderer.enabled = true;
+      //  EyeLight.renderer.enabled = true;
+        EyeLight.SetActive(true);
+      //  fingerHead.renderer.enabled = true;
+
+        fingerHead.SetActive(true);
         iris.renderer.enabled = true;
         DesiredPosition = GetBasePosition();
-        anchorHead.transform.position = GetBasePosition();
-        fingerHead.transform.position = GetBasePosition();
+      //  anchorHead.transform.position = GetBasePosition();
+        fingerHeadCashTransform.position = GetBasePosition();
         anchorLine.SetPosition(0, GetBasePosition());
         anchorLine.SetPosition(1, GetBasePosition());
        // timeToMoveBack = 1f;
         timeElapsed = 0f;
-        transform.position = GetBasePosition();
-        rigidbody2D.velocity = Vector2.zero;
+        cashTransform.position = GetBasePosition();
+        cashRigidbody2D.velocity = Vector2.zero;
         scaleState = -1;
         anim.SetInteger("scaleState", scaleState);
         scaleState = 0;
+        scaleReached = 0;
 
         SetInContactWithWall(false, false);
         SetInContactWithWall(false, true);
@@ -578,10 +561,10 @@ public class PlayerController : MonoBehaviour {
         {
             print(reason);
             GameInfo.PlayerDide();
-            AnchorCenterDiePosition = anchorCenter.transform.position;
-            MagnisDiePosition = transform.position;
-            rigidbody2D.drag = 1000000;
-            rigidbody2D.isKinematic = true;
+            AnchorCenterDiePosition = anchorCenterCashTransform.position;
+            MagnisDiePosition = cashTransform.position;
+            cashRigidbody2D.drag = 1000000;
+            cashRigidbody2D.isKinematic = true;
             fXController.PlayDyingFX();
             GameInfo.PauseGame();
 
@@ -596,7 +579,8 @@ public class PlayerController : MonoBehaviour {
         renderer.enabled = false;
         Body.renderer.enabled = false;
         EyeSocket.renderer.enabled = false;
-        EyeLight.renderer.enabled = false;
+     //   EyeLight.renderer.enabled = false;
+        EyeLight.SetActive(false);
         iris.renderer.enabled = false;
       //  scaleState = 0;
       //  anim.SetInteger("scaleState", scaleState);
@@ -604,39 +588,87 @@ public class PlayerController : MonoBehaviour {
 
     void StartRollOver()
     {
-        rigidbody2D.drag = 60;
+        cashRigidbody2D.drag = 60;
         DisableLightRenderer();
-        rigidbody2D.isKinematic = false;
+        cashRigidbody2D.isKinematic = false;
         collider2D.enabled = false;
 
         
         anchorLine.SetPosition(0, GetBasePosition());
         anchorLine.SetPosition(1, GetBasePosition());
-        anchorHead.transform.position = GetBasePosition();
-        fingerHead.renderer.enabled = false;
-        fingerHead.transform.position = GetBasePosition();
+       // anchorHead.transform.position = GetBasePosition();
+     //   fingerHead.renderer.enabled = false;
+        fingerHead.SetActive(false);
+        fingerHeadCashTransform.position = GetBasePosition();
         DesiredPosition = GetBasePosition();
         GameInfo.RollOver();
     }
+
+
+    public void ShowStarsReached()
+    {
+        starManager.ShowStars(CalcStars());
+    }
+
+    public void LevelFinished()
+    {
+        starManager.ShowStars(CalcStars());
+        Invoke("FinishLevel",4);
+       // starManager.HideStars();
+    }
+
+    void FinishLevel()
+    {
+        starManager.HideStars();
+        GameInfo.LevelFinished();
+    }
+
+    int CalcStars()
+    {
+        int stars = 3;
+
+        if (scaleReached > 5)
+        {
+            stars = 0;
+        }
+        else if (scaleReached > 3)
+        {
+            stars = 1;
+        }
+        else if (scaleReached > 1)
+        {
+            stars = 2;
+        }
+
+        SaveStars(stars);
+        scaleReached = 0;
+        return stars;
+    }
+
+    void SaveStars(int stars)
+    {
+        GameInfo.SaveStars(stars);
+    }
+
 	// Debug Part
 
-    void OnGUI()
-    {
-        GUI.color = Color.white;
+    //void OnGUI()
+    //{
+    //    GUI.color = Color.white;
 
-        GUIStyle _style = GUI.skin.GetStyle("Label");
-        _style.alignment = TextAnchor.UpperLeft;
-        _style.fontSize = 20;
+    //    GUIStyle _style = GUI.skin.GetStyle("Label");
+    //    _style.alignment = TextAnchor.UpperLeft;
+    //    _style.fontSize = 20;
 
-        if (rigidbody2D.velocity.magnitude > maxSpeed)
-            maxSpeed = rigidbody2D.velocity.magnitude;
-      //  GUI.Label(new Rect(20, 20, 200, 200), "maxSpeed : " + maxSpeed);
-        //print ("DTouchWorldPosition" + DTouchWorldPosition);
-        //_style.alignment = TextAnchor.MiddleCenter;
-    //    GUI.Label(new Rect(20, 40, 200, 200), "Contact : " + bIsInContact + bIsContactWithWall);
-      //  GUI.Label(new Rect(20, 60, 200, 200), "scaleState : " + scaleState);
-        //print ("DFinalPosition" + DFinalPosition);
-        //_style.alignment = TextAnchor.MiddleCenter;
-        //GUI.Label (new Rect (Screen.width - 320, 20, 200, 200), "LB(1):" + Input.touches.GetLowerBound (1) + " UB(0):" + Input.touches.GetUpperBound (1), _style);
-    }
+    //    if (rigidbody2D.velocity.magnitude > maxSpeed)
+    //        maxSpeed = rigidbody2D.velocity.magnitude;
+    //  //  GUI.Label(new Rect(20, 20, 200, 200), "maxSpeed : " + maxSpeed);
+    //    //print ("DTouchWorldPosition" + DTouchWorldPosition);
+    //    //_style.alignment = TextAnchor.MiddleCenter;
+    ////    GUI.Label(new Rect(20, 40, 200, 200), "Contact : " + bIsInContact + bIsContactWithWall);
+    //  //  GUI.Label(new Rect(20, 60, 200, 200), "scaleState : " + scaleState);
+    //    //print ("DFinalPosition" + DFinalPosition);
+    //    //_style.alignment = TextAnchor.MiddleCenter;
+    //    //GUI.Label (new Rect (Screen.width - 320, 20, 200, 200), "LB(1):" + Input.touches.GetLowerBound (1) + " UB(0):" + Input.touches.GetUpperBound (1), _style);
+    //}
 }

@@ -20,13 +20,14 @@ public class LightningController : MonoBehaviour
 	// Update is called once per frame
 	void Update () 
     {
-        //if(Time.time - lastTimeTextureUpdated >frameRate)
-        //{
-        //    texturesIndex++;
-        //    texturesIndex %= lightningTextures.Length;
-        //  //  lineRenderer.materials[0].SetTexture("lightningTexture", lightningTextures[texturesIndex]);
-        //    lineRenderer.materials[0].mainTexture = lightningTextures[texturesIndex];
-        //    lastTimeTextureUpdated = Time.time;
-        //}
+        if (Time.time - lastTimeTextureUpdated > frameRate)
+        {
+            texturesIndex++;
+            texturesIndex %= lightningTextures.Length;
+            //  lineRenderer.materials[0].SetTexture("lightningTexture", lightningTextures[texturesIndex]);
+          //  lineRenderer.materials[0].mainTexture = lightningTextures[texturesIndex];
+            lineRenderer.sharedMaterials[0].mainTexture = lightningTextures[texturesIndex];
+            lastTimeTextureUpdated = Time.time;
+        }
 	}
 }

@@ -17,15 +17,15 @@ public class OATrigger : MonoBehaviour {
 	void Update () 
     {
        // Space.World
-        if (transform.position.magnitude < 0.5f && !bIsTriggerd)
-        {
-            foreach (ObstacleAnimator obstacleAnimator in obstacleAnimators)
-            {
-                if (obstacleAnimator.triggerOnScreen)
-                    obstacleAnimator.OnTriggerTouched();
-            }
-            bIsTriggerd = true;
-        }
+        //if (transform.position.magnitude < 0.5f && !bIsTriggerd)
+        //{
+        //    foreach (ObstacleAnimator obstacleAnimator in obstacleAnimators)
+        //    {
+        //        if (obstacleAnimator.triggerOnScreen)
+        //            obstacleAnimator.OnTriggerTouched();
+        //    }
+        //    bIsTriggerd = true;
+        //}
 	
 	}
 
@@ -42,7 +42,7 @@ public class OATrigger : MonoBehaviour {
             if (!obstacleAnimator.triggerOnScreen)
                 obstacleAnimator.OnTriggerTouched();
         }
-        else if (other.gameObject.tag == "MainCamera")
+        else if (other.gameObject.tag == "LevelSwicher")
         {
             foreach (ObstacleAnimator obstacleAnimator in obstacleAnimators)
             {
@@ -54,7 +54,7 @@ public class OATrigger : MonoBehaviour {
         
     }
 
-    void TtiggerOnStartLevel(int levelIndex)
+    void TriggerOnRestartLevel(int levelIndex)
     {
 
         bIsTriggerd = false;

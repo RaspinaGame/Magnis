@@ -32,7 +32,7 @@ public class GameInfo : MonoBehaviour {
 	// Use this for initialization
 	void Start () 
 	{
-        Screen.sleepTimeout = SleepTimeout.NeverSleep;
+        
 	}
 	
 	// Update is called once per frame
@@ -96,11 +96,21 @@ public class GameInfo : MonoBehaviour {
 
     public static Vector3 GetLevelStartPostion()
     {
-        return levelController.MoverLevel[levelController.LevelIndex].transform.position;
+        return levelController.MoverLevel[levelController.LevelIndex].cashTransform.position - (Vector3)levelController.MoverLevel[levelController.LevelIndex].offset;
     }
 
     public static int GetLevelIndex()
     {
         return levelController.LevelIndex;
+    }
+
+    public static void SaveStars(int stars)
+    {
+        levelController.SaveStars(stars);
+    }
+
+    public static bool IsLevelControllerPresent()
+    {
+        return (levelController != null);
     }
 }

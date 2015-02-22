@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
-//using UnityEditor;
+using UnityEngine.UI;
 
 
 [RequireComponent(typeof(Animation))]
@@ -20,6 +20,12 @@ public class ObstacleAnimator : MonoBehaviour {
     public int triggerCount = 1;
     public bool repeatTrigger = false;
     public bool triggerOnScreen = true;
+    public bool reTriggerOnStart = true;
+    public bool bIsVoice;
+    public float audioFadeTime = 1.0F;
+    public float audioListenerFadeOutVolume = 0.2F;
+    public string voiceTextString;
+    public Text voiceTextComponent;
 
     private AudioSource audioSource;
     private Animation anim;
@@ -29,10 +35,17 @@ public class ObstacleAnimator : MonoBehaviour {
     Vector3 startingPosition;
     Vector3 startingScale;
     Quaternion startingRotation;
-
     bool trigerTouched;
 
     float animClipPlayDelayedTimer;
+
+    Animator voiceTextAnim;
+    bool audioIsPlaying;
+    bool audioIsPaused;
+
+    AudioSource bgMusic;
+
+    
 	// Use this for initialization
 
     void Awake()
@@ -50,15 +63,26 @@ public class ObstacleAnimator : MonoBehaviour {
         
         audioSource = GetComponent<AudioSource>();
         audioSource.playOnAwake = false;
+        audioSource.loop = false;
+        audioSource.Stop();
+        audioSource.clip = null;
+        if (bIsVoice)
+        {
+            audioSource.panLevel = 0;
+            audioSource.pan = 0;
+            audioSource.spread = 0;
+            audioSource.priority = 1;
+        }
 
         anim = GetComponent<Animation>();
         anim.playAutomatically = false;
         anim.cullingType = AnimationCullingType.AlwaysAnimate;
-        anim.animatePhysics = true;
-        anim.AddClip(animClip, animClip.name);
-        
+        anim.animatePhysics = false;
+        if (animClip != null)
+        {
+            anim.AddClip(animClip, animClip.name);
+        }
         //initialAnimClip = animClip;
-
         if (initialAnimClip != null)
         {
             anim.AddClip(initialAnimClip, initialAnimClip.name);
@@ -75,11 +99,14 @@ public class ObstacleAnimator : MonoBehaviour {
                 trigger.AddComponent<OATrigger>().AddObstacleAnimator(this);
             }
         }
+
+       
     }
 
 	void Start () 
     {
         //gameObject.SampleAnimation(animClip, 0);
+        
 	}
 	
 	// Update is called once per frame
@@ -119,20 +146,139 @@ public class ObstacleAnimator : MonoBehaviour {
         if (triggerCount == 0 || repeatTrigger)
         {
             oAManager.AddTriggerdObstacleAnimators(this);
-            print("my trigger has been touched" + gameObject.name);
-            anim[animClip.name].time = 0;
-           // anim[animClip.name].wrapMode = WrapMode.ClampForever;
-            anim[animClip.name].speed = playRate;
-            anim.Play(animClip.name);
+          //  print("my trigger has been touched" + gameObject.name);
+            if (animClip != null)
+            {
+                if (playRate > 0)
+                {
+                    anim[animClip.name].time = 0;
+                    // anim[animClip.name].wrapMode = WrapMode.ClampForever;
+                }
+                else 
+                {
+                    anim[animClip.name].time = animClip.length;
+                }
+
+                anim[animClip.name].speed = playRate;
+                anim.Play(animClip.name);
+
+               
+            }
             if (soundClip != null)
             {
-                audioSource.clip = soundClip;
-                audioSource.PlayDelayed(soundClipPlayDelayedTime);
+
+                if (bIsVoice)
+                {
+                    if (soundClipPlayDelayedTime == 0)
+                        PlayVoice();
+                    else
+                        Invoke("PlayVoice", soundClipPlayDelayedTime);
+                }
+                else 
+                {
+                    audioSource.clip = soundClip;
+                    audioSource.PlayDelayed(soundClipPlayDelayedTime);
+                    audioIsPlaying = true;
+                }
             }
+           
         }
     }
 
+    void PlayVoice()
+    {
+        if (PlayerPrefs.GetInt("sfx", 1) == 1)
+            audioSource.ignoreListenerVolume = true;
+        bgMusic = GameObject.FindGameObjectWithTag("LevelController").GetComponent<AudioSource>();
+        StartCoroutine(FadeAudioAndPlay(audioFadeTime));
+        audioIsPlaying = true;
+        if (voiceTextString != "")
+        {
+            if (voiceTextComponent == null)
+            {
+                Text[] texts = FindObjectsOfType<Text>();
+                for (int i = 0; i < texts.Length; i++)
+                {
+                    if (texts[i].gameObject.CompareTag("VoiceText"))
+                        voiceTextComponent = texts[i];
+                }
+            }
+            voiceTextAnim = voiceTextComponent.GetComponentInParent<Animator>();
+            voiceTextComponent.text = voiceTextString;
+            voiceTextAnim.SetBool("show", true);
+        }
+        //  AudioListener.volume = 0.5f;
+    }
+
+    void ResetAudioListenerVolume()
+    {
+        StartCoroutine(ResetFade(audioFadeTime));
+        if (voiceTextString != "")
+        {
+            voiceTextAnim.SetBool("show", false);
+        }
+        audioIsPlaying = false;
+    }
+
+    IEnumerator FadeAudioAndPlay(float timer)
+    {
+        float start = 1.0F;
+        float end = audioListenerFadeOutVolume;
+        float i = 0.0F;
+        float step = 1.0F / timer;
+
+        while (i <= 1.0F)
+        {
+            i += step * Time.deltaTime;
+            if (PlayerPrefs.GetInt("sfx", 1) == 1)
+                AudioListener.volume = Mathf.Lerp(start, end, i);
+            bgMusic.volume = Mathf.Lerp(start, end, i);
+            yield return new WaitForSeconds(step * Time.deltaTime);
+        }
+        if (PlayerPrefs.GetInt("sfx", 1) == 1)
+            AudioListener.volume = end;
+        audioSource.Stop();
+        audioSource.clip = soundClip;
+        audioSource.volume = 1;
+        if (!audioIsPaused)
+            audioSource.Play();
+     //   audioIsPlaying = true;
+        Invoke("ResetAudioListenerVolume", soundClip.length);
+    }
+
+    IEnumerator ResetFade(float timer)
+    {
+        float start = audioListenerFadeOutVolume;
+        float end = 1.0F;
+        float i = 0.0F;
+        float step = 1.0F / timer;
+
+        while (i <= 1.0F)
+        {
+            i += step * Time.deltaTime;
+            if (PlayerPrefs.GetInt("sfx", 1) == 1)
+                AudioListener.volume = Mathf.Lerp(start, end, i);
+            bgMusic.volume = Mathf.Lerp(start, end, i);
+            yield return new WaitForSeconds(step * Time.deltaTime);
+        }
+        if (PlayerPrefs.GetInt("sfx", 1) == 1)
+            AudioListener.volume = end;
+    }
+
     public virtual void OnStartLevel( int levelIndex)
+    {
+       
+       // anim.Stop();
+      //  resertToInitial();
+        
+        //anim.Play(animClip.name, PlayMode.StopAll);
+        if (trigger == null && bIsVoice)
+        {
+            OnTriggerTouched();
+        }
+    }
+
+    public virtual void OnRestartLevel( int levelIndex)
     {
        
        // anim.Stop();
@@ -145,14 +291,14 @@ public class ObstacleAnimator : MonoBehaviour {
         }
     }
 
-    public virtual void OnStartNextLevel( int levelIndex)
+    public virtual void OnLateStartLevel(int levelIndex)
     {
-       
-       // anim.Stop();
-       // resertToInitial();
-        
+
+        // anim.Stop();
+        //resertToInitial();
+
         //anim.Play(animClip.name, PlayMode.StopAll);
-        if (trigger == null)
+        if (trigger == null && !bIsVoice)
         {
             OnTriggerTouched();
         }
@@ -173,7 +319,15 @@ public class ObstacleAnimator : MonoBehaviour {
         //if (!anim.IsPlaying(animClip.name))
            // anim[animClip.name].time = animClip.length;
 
-        anim[animClip.name].speed = 0;
+        if (animClip != null)
+        {
+            anim[animClip.name].speed = 0;
+        }
+        if (audioIsPlaying)
+        {
+            audio.Pause();
+            audioIsPaused = true;
+        }
        // anim[animClip.name].speed = -1f;
         //anim.Play(animClip.name);
         
@@ -200,7 +354,16 @@ public class ObstacleAnimator : MonoBehaviour {
     public void GameIsResumed(int levelIndex)
     {
       //  CancelInvoke();
-        anim[animClip.name].speed = playRate;
+        if (animClip != null)
+        {
+            anim[animClip.name].speed = playRate;
+        }
+
+        if (audioIsPlaying)
+        {
+            audio.Play();
+            audioIsPaused = false;
+        }
     }
 
     public void RoleBack(int levelIndex)
@@ -221,9 +384,12 @@ public class ObstacleAnimator : MonoBehaviour {
             //    anim.AddClip(initialAnimClip, "initialAnimClip");
             //}
             //anim.CrossFade("initialAnimClip",1f);
-            anim[animClip.name].time = 0;
-            anim[animClip.name].speed = 0;
-            anim.Play(animClip.name);
+            if (animClip != null)
+            {
+                anim[animClip.name].time = 0;
+                anim[animClip.name].speed = 0;
+                anim.Play(animClip.name);
+            }
             // anim.Stop();
         }
         //anim["initialAnimClip"].wrapMode = WrapMode.Loop;
@@ -237,8 +403,21 @@ public class ObstacleAnimator : MonoBehaviour {
         //transform.position = startingPosition;
         //transform.localScale = startingScale;
         //transform.localRotation = startingRotation;
-        triggerCount = startingTriggerCount;
-       
+        if (reTriggerOnStart)
+        {
+            triggerCount = startingTriggerCount;
+        }
+
+        if (bIsVoice)
+        {
+            StopAllCoroutines();
+            AudioListener.volume = 1;
+            if (voiceTextString != "")
+            {
+                voiceTextAnim.SetBool("show", false);
+            }
+        }
+        audioSource.Stop();
     }
 
     void FirstFrameRiched()
@@ -257,11 +436,13 @@ public class ObstacleAnimator : MonoBehaviour {
     {
        // print("OnDisable");
         anim.enabled = false;
+        audioSource.enabled = false;
     }
 
     void OnEnable()
     {
         anim.enabled = true;
+        audioSource.enabled = true;
     }
 
 
