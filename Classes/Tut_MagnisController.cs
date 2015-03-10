@@ -22,7 +22,8 @@ public class Tut_MagnisController : MonoBehaviour {
     FXController fXController;
     Vector3 BasePosition;
 
-    AudioSource bgMusic;
+    public AudioSource bgMusic;
+   // public 
     // Use this for initialization
     void Start()
     {
@@ -41,7 +42,7 @@ public class Tut_MagnisController : MonoBehaviour {
         //    AudioListener.volume = 0;
         //}
 
-        bgMusic = GetComponent<AudioSource>();
+       // bgMusic = GetComponent<AudioSource>();
         bgMusic.ignoreListenerVolume = true;
         if (PlayerPrefs.GetInt("music", 1) == 1)
         {

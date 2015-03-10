@@ -30,9 +30,9 @@ public class FPSDisplay : MonoBehaviour
     //    style.alignment = TextAnchor.UpperLeft;
     //    style.fontSize = h * 2 / 100;
     //    style.normal.textColor = new Color(1f, 1f, 1f, 1.0f);
-        
+
     //    minFps = Mathf.Min(fps, minFps);
-    //    minFps = Mathf.Lerp(minFps,fps,0.01f);
+    //    minFps = Mathf.Lerp(minFps, fps, 0.01f);
     //    text = string.Format("minFps: " + minFps);
     //    GUI.Label(rect, text, style);
 

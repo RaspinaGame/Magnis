@@ -8,7 +8,7 @@ public class ButtonController : MonoBehaviour
     public int levelIndex;
     public int chapterIndex;
     bool bIsDemoVersion = false;
-    public Image[] starImages;
+    public GameObject[] starImages;
 
     Button button;
     UIController uIController;
@@ -77,14 +77,14 @@ public class ButtonController : MonoBehaviour
 
      //       print("ChapterReached :" + PlayerPrefs.GetInt("ChapterReached", 0));
      //   print("LevelReached : " + PlayerPrefs.GetInt("LevelReached", 0));
-        if (PlayerPrefs.GetInt("ChapterReached", 2) < chapterIndex  && !bIsDemoVersion)
+        if (SaveSystem.GetInt("ChapterReached", 2) < chapterIndex && !bIsDemoVersion)
         {
             
             button.interactable = false;
             rectTransform.sizeDelta = new Vector2(100, 100);
             text.color = new Color(text.color.r, text.color.g, text.color.b, 0.2f);
         }
-        else if (PlayerPrefs.GetInt("ChapterReached", 2) == chapterIndex && PlayerPrefs.GetInt("LevelReached", 0) < levelIndex && !bIsDemoVersion)
+        else if (SaveSystem.GetInt("ChapterReached", 2) == chapterIndex && SaveSystem.GetInt("LevelReached", 0) < levelIndex && !bIsDemoVersion)
         {
             //button = GetComponent<Button>();
             button.interactable = false;
@@ -136,21 +136,21 @@ public class ButtonController : MonoBehaviour
         string s = "";
         s += chapterIndex;
         s += levelIndex;
-        int saveStars = PlayerPrefs.GetInt(s, 0);
+        int saveStars = SaveSystem.GetInt(s, 0);
 
-        for (int i = 0; i < starImages.Length; i++)
-        {
-            if (saveStars > i)
+      //  for (int i = 0; i < starImages.Length; i++)
+       // {
+            if (saveStars > 0)
             {
-                starImages[i].sprite = solidStarSprite;
-            }
+            starImages[saveStars-1].SetActive(true);// = solidStarSprite;
+           }
             //else
             //{
             //    starImages[i].sprite = emptyStarSprite;
             //}
 
-            starImages[i].enabled = true;
-        }
+           // starImages[i].enabled = true;
+      //  }
        
     }
 }

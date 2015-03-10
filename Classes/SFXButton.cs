@@ -35,6 +35,8 @@ public class SFXButton : MonoBehaviour {
 
     public void OnClick()
     {
+        SaveSystem.DeleteAll();
+
         if (PlayerPrefs.GetInt("sfx", 1) == 1)
         {
             PlayerPrefs.SetInt("sfx", 0);

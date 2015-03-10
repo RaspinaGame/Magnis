@@ -6,6 +6,9 @@ public class AnimationEventHelper : MonoBehaviour {
     AudioSource audio;
     AudioSource audio2;
     public Animator inAnim;
+	public ParticleSystem Psystem01;
+	public ParticleSystem Psystem02;
+	public ParticleSystem Psystem03;
 
 	// Use this for initialization
 	void Start () {
@@ -56,6 +59,33 @@ public class AnimationEventHelper : MonoBehaviour {
         // audio.clip = inClip;
         // audio.Play();
     }
+
+	public void ParticleEffect(float PSystemNum)
+	{
+		if (PSystemNum==1)
+		{	
+			Psystem01.gameObject.SetActive(true);
+			Psystem01.Emit(90);
+		}
+		else if (PSystemNum==2)
+		{
+			Psystem02.gameObject.SetActive(true);
+			Psystem02.Emit(90);
+		}
+		else if (PSystemNum==3)
+		{
+			Psystem03.gameObject.SetActive(true);
+			Psystem03.Emit(90);
+		}
+
+		Invoke("StopPSystems",1.0f);
+	}
+	public void StopPSystems()
+	{
+		Psystem01.gameObject.SetActive(false);
+		Psystem02.gameObject.SetActive(false);
+		Psystem03.gameObject.SetActive(false);
+	}
 
     public void LoadLevel(string levelName)
     {

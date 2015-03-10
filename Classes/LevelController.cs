@@ -58,6 +58,8 @@ public class LevelController : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
         Screen.sleepTimeout = SleepTimeout.NeverSleep;
+
+        Application.targetFrameRate = 60;
        // PlayerPrefs.DeleteKey("ChapterReached");
 
         BackGroundsScroller = FindObjectsOfType<BGScroller>();
@@ -86,7 +88,7 @@ public class LevelController : MonoBehaviour {
             MC.gameObject.SetActive(false);
         }
 
-        LevelIndex = PlayerPrefs.GetInt("LevelIndex", LevelIndex);
+        LevelIndex = PlayerPrefs.GetInt("SelectedLevelIndex", LevelIndex);
 
 
         Startlevel();
@@ -97,7 +99,7 @@ public class LevelController : MonoBehaviour {
 		//{
 		//	ChildPositions.Add( CHPos );
 		//}		
-        PlayerPrefs.DeleteKey("LevelIndex");
+        PlayerPrefs.DeleteKey("SelectedLevelIndex");
 
         cameraCashTransform = Camera.main.transform;
 
@@ -165,10 +167,10 @@ public class LevelController : MonoBehaviour {
             MoverLevel [LevelIndex].LevelFinished (EndPoint.transform.position);
 		    LevelIndex = ( LevelIndex + 1 ) % ( MoverLevel.Count );
 
-            if (PlayerPrefs.GetInt("ChapterReached", 2) >= Application.loadedLevel && PlayerPrefs.GetInt("LevelReached", 0) < LevelIndex)
+            if (SaveSystem.GetInt("ChapterReached", 2) >= Application.loadedLevel && SaveSystem.GetInt("LevelReached", 0) < LevelIndex)
             {
-                PlayerPrefs.SetInt("LevelReached", LevelIndex);
-                PlayerPrefs.Save();
+                SaveSystem.SetInt("LevelReached", LevelIndex);
+                SaveSystem.Save();
             }
             Startlevel();
         }
@@ -252,16 +254,44 @@ public class LevelController : MonoBehaviour {
         {
             int chapterIndex = Application.loadedLevel + 1;
 
-            PlayerPrefs.SetInt("LevelIndex", 0);
-            if (PlayerPrefs.GetInt("ChapterReached", 2) < chapterIndex)
+            SaveSystem.SetInt("SelectedLevelIndex", 0);
+            if (SaveSystem.GetInt("ChapterReached", 2) < chapterIndex)
             {
 
-                PlayerPrefs.SetInt("ChapterReached", chapterIndex);
-                PlayerPrefs.SetInt("LevelReached", 0);
+                SaveSystem.SetInt("ChapterReached", chapterIndex);
+                SaveSystem.SetInt("LevelReached", 0);
             }
-            PlayerPrefs.Save();
+           
            // Application.LoadLevel(levelIndex);
             AutoFade.LoadLevel(chapterIndex, 1.5f, 1.5f, new Color(0f, 0.1f, 0.1f));
+
+            //Achievement chapter1
+            if (chapterIndex == 3)
+            {
+                GameCenterIntegration.ReportProgress(GameCenterIntegration.AchievementChapter1);
+            }
+            //Achievement chapter2
+            else if (chapterIndex == 4)
+            {
+                GameCenterIntegration.ReportProgress(GameCenterIntegration.AchievementChapter2);
+            }
+            //Achievement chapter3
+            else if (chapterIndex == 5)
+            {
+                GameCenterIntegration.ReportProgress(GameCenterIntegration.AchievementChapter3);
+            }
+            //Achievement chapter4
+            else if (chapterIndex == 6)
+            {
+                GameCenterIntegration.ReportProgress(GameCenterIntegration.AchievementChapter4);
+            }
+            //Achievement chapter5
+            else if (chapterIndex == 7)
+            {
+                GameCenterIntegration.ReportProgress(GameCenterIntegration.AchievementChapter5);
+            }
+            
+            SaveSystem.Save();
         }
             
         else 
@@ -285,12 +315,55 @@ public class LevelController : MonoBehaviour {
         s += chapterIndex;
         s += LevelIndex;
 
-        int saveStars = PlayerPrefs.GetInt(s,0);
+        int saveStars = SaveSystem.GetInt(s,0);
 
         if (saveStars < stars)
         {
-            PlayerPrefs.SetInt(s, stars);
+            SaveSystem.SetInt(s, stars);
+
+            int totalStars = SaveSystem.GetInt("totalStars",0);
+            totalStars += (stars - saveStars);
+            SaveSystem.SetInt("totalStars", totalStars);
+
+            //LeaderBoard
+            GameCenterIntegration.ReportScore(totalStars);
+
+            //Achievement allstars
+            if (totalStars >= 153)
+            {
+                GameCenterIntegration.ReportProgress(GameCenterIntegration.AchievementAllstars);
+            }
+            //Achievement 120stars
+            else if (totalStars >= 120)
+            {
+                GameCenterIntegration.ReportProgress(GameCenterIntegration.Achievement120stars);
+            }
+            //Achievement 60stars
+            else if (totalStars >= 60)
+            {
+                GameCenterIntegration.ReportProgress(GameCenterIntegration.Achievement60stars);
+            }
+            //Achievement 30stars
+            else if (totalStars >= 30)
+            {
+                GameCenterIntegration.ReportProgress(GameCenterIntegration.Achievement30stars);
+            }
+            //Achievement  : 1stStep
+            else if (Application.loadedLevel == 2 && LevelIndex == 0)
+            {
+                GameCenterIntegration.ReportProgress(GameCenterIntegration.Achievement1stStep);
+            }
+            //Achievement  : 3stars
+            if (stars == 3)
+            {
+                GameCenterIntegration.ReportProgress(GameCenterIntegration.Achievement3stars);
+            }
+            
+            
+           
         }
+
+       
     }
 
     public static void CreateBannerView()

@@ -12,7 +12,7 @@ public class StarManager : MonoBehaviour {
 
     Animator anim;
 
-    string[] starMessage = {"disasters!","notbad!","good!","perfection!"};
+    string[] starMessage = { "Lucky!", "Lucky!", "Good!", "Perfect!" };
     //string star2;
     //string star1;
     //string star0;
@@ -35,16 +35,16 @@ public class StarManager : MonoBehaviour {
         starImages[0].enabled = true;
         for (int i = 1; i < starImages.Length; i++)
         {
-            if (stars >= i)
-            {
-                starImages[i].sprite = solidStarSprite;
-            }
-            else 
-            {
-                starImages[i].sprite = emptyStarSprite;
-            }
+            //if (stars >= i)
+            //{
+            //    starImages[i].sprite = solidStarSprite;
+            //}
+            //else 
+            //{
+            //    starImages[i].sprite = emptyStarSprite;
+            //}
 
-            starImages[i].enabled = true;
+            //starImages[i].enabled = true;
         }
 
         //for (int i = 0; i < texts.Length; i++)
@@ -55,7 +55,7 @@ public class StarManager : MonoBehaviour {
         text.text = starMessage[stars];
         text.enabled = true;
 
-        anim.SetTrigger("show");
+        anim.SetInteger("showStars", stars);
 
       //  Invoke("HideStars", 4);
     }
@@ -75,7 +75,8 @@ public class StarManager : MonoBehaviour {
 
         text.enabled = false;
 
-        anim.SetTrigger("show");
+      //  anim.SetTrigger("show");
+        anim.SetInteger("showStars", 0);
     }
 
 }

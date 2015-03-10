@@ -29,7 +29,7 @@ public class UIController : MonoBehaviour
         //    mainPanaleAnim.SetInteger("state", PlayerPrefs.GetInt("ChapterReached", 1));
         //}
 
-
+        Application.targetFrameRate = 60;
         AudioListener.pause = false;
         
 	}
@@ -44,7 +44,7 @@ public class UIController : MonoBehaviour
     {
         int chapterIndex;
         print("loadLevel");
-        PlayerPrefs.SetInt("LevelIndex", levelIndex);
+        PlayerPrefs.SetInt("SelectedLevelIndex", levelIndex);
         chapterIndex = mainPanaleAnim.GetInteger("state");
         chapterIndex+=2;
       //  Application.LoadLevel(chapterIndex);

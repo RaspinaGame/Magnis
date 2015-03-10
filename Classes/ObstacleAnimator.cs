@@ -187,10 +187,11 @@ public class ObstacleAnimator : MonoBehaviour {
 
     void PlayVoice()
     {
-        if (PlayerPrefs.GetInt("sfx", 1) == 1)
+      //  if (PlayerPrefs.GetInt("sfx", 1) == 1)
             audioSource.ignoreListenerVolume = true;
         bgMusic = GameObject.FindGameObjectWithTag("LevelController").GetComponent<AudioSource>();
-        StartCoroutine(FadeAudioAndPlay(audioFadeTime));
+      //  if (PlayerPrefs.GetInt("music", 1) == 1)
+            StartCoroutine(FadeAudioAndPlay(audioFadeTime));
         audioIsPlaying = true;
         if (voiceTextString != "")
         {
@@ -240,8 +241,11 @@ public class ObstacleAnimator : MonoBehaviour {
         audioSource.Stop();
         audioSource.clip = soundClip;
         audioSource.volume = 1;
-        if (!audioIsPaused)
+        if (!audioIsPaused )
             audioSource.Play();
+
+        if (PlayerPrefs.GetInt("music", 1) == 0)
+            audioSource.mute = true;
      //   audioIsPlaying = true;
         Invoke("ResetAudioListenerVolume", soundClip.length);
     }
@@ -359,10 +363,19 @@ public class ObstacleAnimator : MonoBehaviour {
             anim[animClip.name].speed = playRate;
         }
 
-        if (audioIsPlaying)
+        if (audioIsPlaying )
         {
             audio.Play();
             audioIsPaused = false;
+
+            if (PlayerPrefs.GetInt("music", 1) == 1)
+            {
+                audioSource.mute = false;
+            }
+            else
+            {
+                audioSource.mute = true;
+            }
         }
     }
 

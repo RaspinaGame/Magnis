@@ -627,11 +627,12 @@ public class PlayerController : MonoBehaviour {
     {
         int stars = 3;
 
-        if (scaleReached > 5)
-        {
-            stars = 0;
-        }
-        else if (scaleReached > 3)
+        //if (scaleReached > 5)
+        //{
+        //    stars = 0;
+        //}
+        //else 
+        if (scaleReached > 4)
         {
             stars = 1;
         }
@@ -652,23 +653,23 @@ public class PlayerController : MonoBehaviour {
 
 	// Debug Part
 
-    //void OnGUI()
-    //{
-    //    GUI.color = Color.white;
+    void OnGUI()
+    {
+        //GUI.color = Color.white;
 
-    //    GUIStyle _style = GUI.skin.GetStyle("Label");
-    //    _style.alignment = TextAnchor.UpperLeft;
-    //    _style.fontSize = 20;
+        //GUIStyle _style = GUI.skin.GetStyle("Label");
+        //_style.alignment = TextAnchor.UpperLeft;
+        //_style.fontSize = 20;
 
-    //    if (rigidbody2D.velocity.magnitude > maxSpeed)
-    //        maxSpeed = rigidbody2D.velocity.magnitude;
-    //  //  GUI.Label(new Rect(20, 20, 200, 200), "maxSpeed : " + maxSpeed);
-    //    //print ("DTouchWorldPosition" + DTouchWorldPosition);
-    //    //_style.alignment = TextAnchor.MiddleCenter;
-    ////    GUI.Label(new Rect(20, 40, 200, 200), "Contact : " + bIsInContact + bIsContactWithWall);
-    //  //  GUI.Label(new Rect(20, 60, 200, 200), "scaleState : " + scaleState);
-    //    //print ("DFinalPosition" + DFinalPosition);
-    //    //_style.alignment = TextAnchor.MiddleCenter;
-    //    //GUI.Label (new Rect (Screen.width - 320, 20, 200, 200), "LB(1):" + Input.touches.GetLowerBound (1) + " UB(0):" + Input.touches.GetUpperBound (1), _style);
-    //}
+        ////if (rigidbody2D.velocity.magnitude > maxSpeed)
+        ////    maxSpeed = rigidbody2D.velocity.magnitude;
+        //GUI.Label(new Rect(20, 40, 200, 200), "res : " + Screen.width +"*"+ Screen.height);
+        //print ("DTouchWorldPosition" + DTouchWorldPosition);
+        //_style.alignment = TextAnchor.MiddleCenter;
+        //    GUI.Label(new Rect(20, 40, 200, 200), "Contact : " + bIsInContact + bIsContactWithWall);
+        //  GUI.Label(new Rect(20, 60, 200, 200), "scaleState : " + scaleState);
+        //print ("DFinalPosition" + DFinalPosition);
+        //_style.alignment = TextAnchor.MiddleCenter;
+        //GUI.Label (new Rect (Screen.width - 320, 20, 200, 200), "LB(1):" + Input.touches.GetLowerBound (1) + " UB(0):" + Input.touches.GetUpperBound (1), _style);
+    }
 }
